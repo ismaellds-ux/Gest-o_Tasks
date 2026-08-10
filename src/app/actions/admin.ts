@@ -65,6 +65,40 @@ export async function criarUsuario(formData: FormData): Promise<ActionResult> {
   return {};
 }
 
+export async function editarUsuario(formData: FormData): Promise<ActionResult> {
+  const acesso = await exigirAdmin();
+  if (acesso.error) return { error: acesso.error };
+
+  const id = str(formData, "id");
+  const novoUsuario = str(formData, "usuario");
+  if (!id) return { error: "Usuário inválido." };
+  if (!usuarioValido(novoUsuario)) {
+    return { error: "Escolha um usuário com pelo menos 3 caracteres." };
+  }
+
+  const adminClient = createAdminClient();
+  const { error: authError } = await adminClient.auth.admin.updateUserById(id, {
+    email: emailSintetico(novoUsuario),
+    user_metadata: { usuario: novoUsuario.trim() },
+  });
+
+  if (authError) {
+    if (authError.message.toLowerCase().includes("already been registered")) {
+      return { error: "Esse nome de usuário já está em uso." };
+    }
+    return { error: `Não foi possível editar o usuário: ${authError.message}` };
+  }
+
+  const { error: dbError } = await adminClient
+    .from("usuarios")
+    .update({ usuario: novoUsuario.trim() })
+    .eq("id", id);
+  if (dbError) return { error: `Não foi possível editar o usuário: ${dbError.message}` };
+
+  revalidatePath("/admin");
+  return {};
+}
+
 export async function excluirUsuario(formData: FormData): Promise<ActionResult> {
   const acesso = await exigirAdmin();
   if (acesso.error) return { error: acesso.error };

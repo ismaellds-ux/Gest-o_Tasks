@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
-import { KeyRound, Plus, ShieldCheck, ShieldOff, Trash2, UserPlus } from "lucide-react";
+import { KeyRound, Pencil, Plus, ShieldCheck, ShieldOff, Trash2, UserPlus } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { Field, FieldError, inputClass } from "@/components/Field";
 import { PasswordInput } from "@/components/PasswordInput";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
-import { criarUsuario, excluirUsuario, alternarAdmin, redefinirSenha } from "@/app/actions/admin";
+import { criarUsuario, editarUsuario, excluirUsuario, alternarAdmin, redefinirSenha } from "@/app/actions/admin";
 import type { Usuario } from "@/lib/types";
 
 type ModalState =
   | { type: "novo" }
+  | { type: "editar"; usuario: Usuario }
   | { type: "senha"; usuario: Usuario }
   | { type: "excluir"; usuario: Usuario };
 
@@ -73,15 +74,25 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
                     {u.id !== usuarioAtualId && (
-                      <Button
-                        tone="ghost"
-                        icon={u.is_admin ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
-                        onClick={() => toggleAdmin(u)}
-                        disabled={pendingId === u.id}
-                        className="px-2.5 py-1.5 text-xs"
-                      >
-                        {u.is_admin ? "Remover admin" : "Tornar admin"}
-                      </Button>
+                      <>
+                        <Button
+                          tone="ghost"
+                          icon={<Pencil size={13} />}
+                          onClick={() => setModal({ type: "editar", usuario: u })}
+                          className="px-2.5 py-1.5 text-xs"
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          tone="ghost"
+                          icon={u.is_admin ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
+                          onClick={() => toggleAdmin(u)}
+                          disabled={pendingId === u.id}
+                          className="px-2.5 py-1.5 text-xs"
+                        >
+                          {u.is_admin ? "Remover admin" : "Tornar admin"}
+                        </Button>
+                      </>
                     )}
                     <Button
                       tone="ghost"
@@ -110,6 +121,7 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
       </div>
 
       {modal?.type === "novo" && <NovoUsuarioModal onClose={() => setModal(null)} />}
+      {modal?.type === "editar" && <EditarUsuarioModal usuario={modal.usuario} onClose={() => setModal(null)} />}
       {modal?.type === "senha" && <RedefinirSenhaModal usuario={modal.usuario} onClose={() => setModal(null)} />}
       {modal?.type === "excluir" && <ExcluirUsuarioModal usuario={modal.usuario} onClose={() => setModal(null)} />}
     </div>
@@ -157,6 +169,48 @@ function NovoUsuarioModal({ onClose }: { onClose: () => void }) {
           </Button>
           <Button type="submit" tone="success" icon={<UserPlus size={16} />} disabled={pending}>
             {pending ? "Criando..." : "Criar usuário"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function EditarUsuarioModal({ usuario, onClose }: { usuario: Usuario; onClose: () => void }) {
+  const [error, setError] = useState<string>();
+  const [pending, startTransition] = useTransition();
+  const showToast = useToast();
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    formData.set("id", usuario.id);
+    startTransition(async () => {
+      const result = await editarUsuario(formData);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      showToast("Usuário atualizado!", "success");
+      onClose();
+    });
+  }
+
+  return (
+    <Modal title={`Editar ${usuario.usuario}`} onClose={onClose} maxWidth="max-w-sm">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <Field label="Usuário">
+          <input name="usuario" required autoFocus defaultValue={usuario.usuario} className={inputClass} placeholder="nome.usuario" />
+        </Field>
+
+        <FieldError message={error} />
+
+        <div className="mt-1 flex justify-end gap-2">
+          <Button type="button" tone="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" tone="success" icon={<Pencil size={16} />} disabled={pending}>
+            {pending ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </form>
