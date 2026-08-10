@@ -60,7 +60,10 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
           <tbody>
             {usuarios.map((u) => (
               <tr key={u.id} className="border-b border-border-soft last:border-0">
-                <td className="px-4 py-3 font-medium text-fg">{u.usuario}</td>
+                <td className="px-4 py-3 font-medium text-fg">
+                  {u.usuario}
+                  {u.id === usuarioAtualId && <span className="ml-1.5 font-normal text-fg-muted">(você)</span>}
+                </td>
                 <td className="px-4 py-3 text-fg-muted">{u.criado_em.slice(0, 10).split("-").reverse().join("/")}</td>
                 <td className="px-4 py-3">
                   <span
