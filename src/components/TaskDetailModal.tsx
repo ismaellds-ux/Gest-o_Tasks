@@ -1,0 +1,146 @@
+"use client";
+
+import { useTransition } from "react";
+import { CalendarClock, CheckCircle2, MapPin, Pencil, RotateCcw, Square, Trash2, User } from "lucide-react";
+import { Modal } from "@/components/Modal";
+import { StatusBadge, TipoBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/Button";
+import { useToast } from "@/components/Toast";
+import { getStatus } from "@/lib/domain/status";
+import { formatDateBR } from "@/lib/domain/date";
+import { encerrarRecorrencia, reabrirTarefa } from "@/app/actions/tarefas";
+import type { Adiamento, Tarefa } from "@/lib/types";
+
+interface TaskDetailModalProps {
+  tarefa: Tarefa;
+  ultimoAdiamento?: Adiamento;
+  onClose: () => void;
+  onEditar: () => void;
+  onAdiar: () => void;
+  onConcluir: () => void;
+  onExcluir: () => void;
+}
+
+export function TaskDetailModal({
+  tarefa,
+  ultimoAdiamento,
+  onClose,
+  onEditar,
+  onAdiar,
+  onConcluir,
+  onExcluir,
+}: TaskDetailModalProps) {
+  const status = getStatus(tarefa);
+  const [pending, startTransition] = useTransition();
+  const showToast = useToast();
+
+  function encerrar() {
+    const formData = new FormData();
+    formData.set("id", tarefa.id);
+    startTransition(async () => {
+      const result = await encerrarRecorrencia(formData);
+      if (result.error) return showToast(result.error, "error");
+      showToast("Recorrência encerrada.", "success");
+      onClose();
+    });
+  }
+
+  function reabrir() {
+    const formData = new FormData();
+    formData.set("id", tarefa.id);
+    startTransition(async () => {
+      const result = await reabrirTarefa(formData);
+      if (result.error) return showToast(result.error, "error");
+      showToast("Tarefa reaberta.", "success");
+      onClose();
+    });
+  }
+
+  return (
+    <Modal title={tarefa.o_que} onClose={onClose} maxWidth="max-w-xl">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge status={status} />
+          <TipoBadge tipo={tarefa.tipo} />
+          <span className="label-caps">{tarefa.periodicidade}</span>
+        </div>
+
+        {tarefa.descricao && <p className="text-sm text-fg-secondary">{tarefa.descricao}</p>}
+
+        <div className="grid grid-cols-2 gap-3 rounded-xl border border-border-soft bg-surface-elevated p-4 text-sm">
+          <div>
+            <span className="label-caps block">Quando</span>
+            <span className="text-fg">{formatDateBR(tarefa.quando)}</span>
+          </div>
+          <div>
+            <span className="label-caps block">Quem</span>
+            <span className="flex items-center gap-1 text-fg">
+              <User size={13} /> {tarefa.quem}
+            </span>
+          </div>
+          {tarefa.tipo === "externa" && (
+            <div className="col-span-2">
+              <span className="label-caps block">Local</span>
+              <span className="flex items-center gap-1 text-fg">
+                <MapPin size={13} />
+                {[tarefa.local, tarefa.cidade].filter(Boolean).join(" — ")}
+              </span>
+            </div>
+          )}
+          {tarefa.concluido_por && (
+            <div className="col-span-2">
+              <span className="label-caps block">Concluída por (última vez)</span>
+              <span className="text-green">{tarefa.concluido_por}</span>
+            </div>
+          )}
+        </div>
+
+        {ultimoAdiamento && (
+          <div className="rounded-xl border border-amber/20 bg-amber-dim/40 p-4 text-sm">
+            <span className="label-caps mb-1 block text-amber">Último adiamento</span>
+            <p className="text-fg-secondary">&ldquo;{ultimoAdiamento.motivo}&rdquo;</p>
+            <div className="mt-2 flex gap-4 text-xs text-fg-muted">
+              <span>
+                <span className="label-caps mr-1">Data original</span>
+                {formatDateBR(ultimoAdiamento.data_anterior)}
+              </span>
+              <span>
+                <span className="label-caps mr-1">Nova data</span>
+                {formatDateBR(ultimoAdiamento.nova_data)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2 border-t border-border-soft pt-4">
+          {status !== "concluida" && (
+            <>
+              <Button tone="success" icon={<CheckCircle2 size={15} />} onClick={onConcluir}>
+                Concluir
+              </Button>
+              <Button tone="warn" icon={<CalendarClock size={15} />} onClick={onAdiar}>
+                Adiar
+              </Button>
+            </>
+          )}
+          <Button tone="default" icon={<Pencil size={15} />} onClick={onEditar}>
+            Editar
+          </Button>
+          {tarefa.periodicidade !== "unica" && !tarefa.concluida && (
+            <Button tone="default" icon={<Square size={15} />} onClick={encerrar} disabled={pending}>
+              Encerrar recorrência
+            </Button>
+          )}
+          {tarefa.periodicidade === "unica" && tarefa.concluida && (
+            <Button tone="default" icon={<RotateCcw size={15} />} onClick={reabrir} disabled={pending}>
+              Reabrir
+            </Button>
+          )}
+          <Button tone="danger" icon={<Trash2 size={15} />} onClick={onExcluir} className="ml-auto">
+            Excluir
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}

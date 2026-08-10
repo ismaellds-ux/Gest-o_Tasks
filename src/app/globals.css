@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #10151a;
+  --surface: #171e24;
+  --surface-elevated: #1e2730;
+  --surface-light: #243039;
+  --border: #2b3944;
+  --border-soft: #233039;
+
+  --fg: #eef2f1;
+  --fg-secondary: #8fa3ab;
+  --fg-muted: #5f7079;
+
+  --amber: #e8a33d;
+  --amber-dim: #4a3a20;
+  --yellow: #f4c95d;
+  --yellow-dim: #4a4020;
+  --green: #4fb286;
+  --green-dim: #1e352c;
+  --coral: #d9694f;
+  --coral-dim: #3a2620;
+  --violet: #8b7ee8;
+  --violet-dim: #2a2740;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-light: var(--surface-light);
+  --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+
+  --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+  --color-yellow: var(--yellow);
+  --color-yellow-dim: var(--yellow-dim);
+  --color-green: var(--green);
+  --color-green-dim: var(--green-dim);
+  --color-coral: var(--coral);
+  --color-coral-dim: var(--coral-dim);
+  --color-violet: var(--violet);
+  --color-violet-dim: var(--violet-dim);
+
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-inter);
+  --font-label: var(--font-jetbrains-mono);
+}
+
+body {
+  background:
+    radial-gradient(
+      ellipse 900px 700px at 88% -8%,
+      rgba(79, 178, 134, 0.16),
+      transparent 60%
+    ),
+    var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+.label-caps {
+  font-family: var(--font-label), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 10.5px;
+  color: var(--fg-muted);
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 8px;
+  }
+}
