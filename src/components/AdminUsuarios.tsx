@@ -4,6 +4,7 @@ import { useState, useTransition, type FormEvent } from "react";
 import { KeyRound, Plus, ShieldCheck, ShieldOff, Trash2, UserPlus } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { Field, FieldError, inputClass } from "@/components/Field";
+import { PasswordInput } from "@/components/PasswordInput";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { criarUsuario, excluirUsuario, alternarAdmin, redefinirSenha } from "@/app/actions/admin";
@@ -141,7 +142,7 @@ function NovoUsuarioModal({ onClose }: { onClose: () => void }) {
           <input name="usuario" required autoFocus className={inputClass} placeholder="nome.usuario" />
         </Field>
         <Field label="Senha inicial">
-          <input name="senha" type="password" required minLength={6} className={inputClass} placeholder="mínimo 6 caracteres" />
+          <PasswordInput name="senha" required minLength={6} placeholder="mínimo 6 caracteres" />
         </Field>
         <label className="flex items-center gap-2 text-sm text-fg-secondary">
           <input type="checkbox" name="is_admin" className="h-4 w-4 rounded border-border" />
@@ -187,7 +188,7 @@ function RedefinirSenhaModal({ usuario, onClose }: { usuario: Usuario; onClose: 
     <Modal title={`Redefinir senha de ${usuario.usuario}`} onClose={onClose} maxWidth="max-w-sm">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Field label="Nova senha">
-          <input name="nova_senha" type="password" required minLength={6} autoFocus className={inputClass} placeholder="mínimo 6 caracteres" />
+          <PasswordInput name="nova_senha" required minLength={6} autoFocus placeholder="mínimo 6 caracteres" />
         </Field>
 
         <FieldError message={error} />

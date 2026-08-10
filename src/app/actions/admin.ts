@@ -54,7 +54,7 @@ export async function criarUsuario(formData: FormData): Promise<ActionResult> {
     if (error?.message.toLowerCase().includes("already been registered")) {
       return { error: "Esse nome de usuário já está em uso." };
     }
-    return { error: "Não foi possível criar o usuário." };
+    return { error: `Não foi possível criar o usuário: ${error?.message ?? "erro desconhecido"}` };
   }
 
   if (tornarAdmin) {
@@ -75,7 +75,7 @@ export async function excluirUsuario(formData: FormData): Promise<ActionResult> 
 
   const adminClient = createAdminClient();
   const { error } = await adminClient.auth.admin.deleteUser(id);
-  if (error) return { error: "Não foi possível excluir o usuário." };
+  if (error) return { error: `Não foi possível excluir o usuário: ${error.message}` };
 
   revalidatePath("/admin");
   return {};
@@ -92,7 +92,7 @@ export async function alternarAdmin(formData: FormData): Promise<ActionResult> {
 
   const adminClient = createAdminClient();
   const { error } = await adminClient.from("usuarios").update({ is_admin: novoValor }).eq("id", id);
-  if (error) return { error: "Não foi possível atualizar o usuário." };
+  if (error) return { error: `Não foi possível atualizar o usuário: ${error.message}` };
 
   revalidatePath("/admin");
   return {};
@@ -109,7 +109,7 @@ export async function redefinirSenha(formData: FormData): Promise<ActionResult> 
 
   const adminClient = createAdminClient();
   const { error } = await adminClient.auth.admin.updateUserById(id, { password: novaSenha });
-  if (error) return { error: "Não foi possível redefinir a senha." };
+  if (error) return { error: `Não foi possível redefinir a senha: ${error.message}` };
 
   return {};
 }

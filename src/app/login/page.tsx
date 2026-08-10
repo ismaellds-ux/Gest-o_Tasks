@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { LogIn } from "lucide-react";
 import { entrar } from "@/app/actions/auth";
 import { Field, FieldError, inputClass } from "@/components/Field";
+import { PasswordInput } from "@/components/PasswordInput";
 import { Button } from "@/components/Button";
 
 export default function LoginPage() {
@@ -20,7 +21,7 @@ export default function LoginPage() {
             <input name="usuario" required autoFocus className={inputClass} placeholder="seu.usuario" />
           </Field>
           <Field label="Senha">
-            <input name="senha" type="password" required className={inputClass} placeholder="••••••••" />
+            <PasswordInput name="senha" required placeholder="••••••••" />
           </Field>
 
           <FieldError message={state?.error} />
