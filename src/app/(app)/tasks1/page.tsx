@@ -1,12 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import { getQuadroData, getUsuarioAtual } from "@/lib/data/tarefas";
-import { isAdminAtual } from "@/lib/data/admin";
+import { isAdminAtual, listarUsuarios } from "@/lib/data/admin";
 import { QuadroBoard } from "@/components/QuadroBoard";
 
 export default async function Tasks1Page() {
   const supabase = await createClient();
-  const [{ tarefas, ultimoAdiamentoPorTarefa, tarefasComConclusao, conclusoes }, usuarioAtual, isAdmin] =
-    await Promise.all([getQuadroData(supabase, "tasks1"), getUsuarioAtual(supabase), isAdminAtual(supabase)]);
+  const [{ tarefas, ultimoAdiamentoPorTarefa, tarefasComConclusao, conclusoes }, usuarioAtual, isAdmin, usuarios] =
+    await Promise.all([
+      getQuadroData(supabase, "tasks1"),
+      getUsuarioAtual(supabase),
+      isAdminAtual(supabase),
+      listarUsuarios(supabase),
+    ]);
 
   return (
     <QuadroBoard
@@ -17,6 +22,7 @@ export default async function Tasks1Page() {
       conclusoes={conclusoes}
       usuarioAtual={usuarioAtual}
       isAdmin={isAdmin}
+      usuarios={usuarios.map((u) => u.usuario)}
     />
   );
 }

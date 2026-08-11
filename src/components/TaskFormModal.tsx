@@ -13,6 +13,7 @@ import type { Periodicidade, Quadro, Tarefa, Tipo } from "@/lib/types";
 interface TaskFormModalProps {
   quadro: Quadro;
   tarefa?: Tarefa;
+  usuarios: string[];
   onClose: () => void;
 }
 
@@ -28,14 +29,16 @@ const PERIODICIDADE_OPTIONS: { value: Periodicidade; label: string }[] = [
   { value: "mensal", label: "Mensal" },
 ];
 
-export function TaskFormModal({ quadro, tarefa, onClose }: TaskFormModalProps) {
+export function TaskFormModal({ quadro, tarefa, usuarios, onClose }: TaskFormModalProps) {
   const [tipo, setTipo] = useState<Tipo>(tarefa?.tipo ?? "interna");
   const [periodicidade, setPeriodicidade] = useState<Periodicidade>(tarefa?.periodicidade ?? "unica");
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
   const showToast = useToast();
 
-  const quemInicial = tarefa?.quem ?? (quadro === "tasks2" ? "Felipe" : "");
+  const quemInicial =
+    tarefa?.quem ?? (quadro === "tasks2" && usuarios.includes("Felipe") ? "Felipe" : "");
+  const quemForaDaLista = tarefa?.quem && !usuarios.includes(tarefa.quem) ? tarefa.quem : null;
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,7 +85,19 @@ export function TaskFormModal({ quadro, tarefa, onClose }: TaskFormModalProps) {
             <input type="date" name="quando" required defaultValue={tarefa?.quando} className={inputClass} />
           </Field>
           <Field label="Quem">
-            <input name="quem" required defaultValue={quemInicial} className={inputClass} placeholder="Responsável" />
+            <select name="quem" required defaultValue={quemInicial} className={inputClass}>
+              <option value="" disabled>
+                Selecione
+              </option>
+              {quemForaDaLista && (
+                <option value={quemForaDaLista}>{quemForaDaLista} (fora da lista atual)</option>
+              )}
+              {usuarios.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
           </Field>
         </div>
 

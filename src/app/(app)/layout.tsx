@@ -1,15 +1,16 @@
-import { LogOut } from "lucide-react";
+import { ListChecks, LogOut } from "lucide-react";
 import { Tabs } from "@/components/Tabs";
 import { Logo } from "@/components/Logo";
 import { ToastProvider } from "@/components/Toast";
 import { createClient } from "@/lib/supabase/server";
-import { getUsuarioAtual } from "@/lib/data/tarefas";
+import { contarMinhasTarefas, getUsuarioAtual } from "@/lib/data/tarefas";
 import { isAdminAtual } from "@/lib/data/admin";
 import { sair } from "@/app/actions/auth";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const [usuario, admin] = await Promise.all([getUsuarioAtual(supabase), isAdminAtual(supabase)]);
+  const minhasTarefas = await contarMinhasTarefas(supabase, usuario);
 
   return (
     <ToastProvider>
@@ -29,6 +30,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </button>
           </form>
         </header>
+
+        {minhasTarefas.total > 0 && (
+          <div className="flex items-center gap-2 rounded-xl border border-violet/25 bg-violet-dim px-4 py-3 text-sm text-violet">
+            <ListChecks size={16} className="shrink-0" />
+            <span>
+              Você tem <span className="font-semibold">{minhasTarefas.total}</span>{" "}
+              {minhasTarefas.total === 1 ? "tarefa" : "tarefas"} em aberto atribuída
+              {minhasTarefas.total === 1 ? "" : "s"} a você
+              {minhasTarefas.pendentes > 0 &&
+                `, ${minhasTarefas.pendentes} ${minhasTarefas.pendentes === 1 ? "atrasada" : "atrasadas"}`}
+              .
+            </span>
+          </div>
+        )}
+
         {children}
       </div>
     </ToastProvider>

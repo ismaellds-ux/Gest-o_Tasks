@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getStatus } from "@/lib/domain/status";
 import type { Adiamento, Conclusao, Quadro, Tarefa } from "@/lib/types";
 
 export interface ConclusaoComTarefa extends Conclusao {
@@ -61,4 +62,24 @@ export async function getUsuarioAtual(supabase: SupabaseClient<any>): Promise<st
     data: { user },
   } = await supabase.auth.getUser();
   return (user?.user_metadata?.usuario as string | undefined) ?? "desconhecido";
+}
+
+export interface MinhasTarefasResumo {
+  total: number;
+  pendentes: number;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function contarMinhasTarefas(supabase: SupabaseClient<any>, usuario: string): Promise<MinhasTarefasResumo> {
+  const { data } = await supabase
+    .from("tarefas")
+    .select("quando, concluida, cancelada")
+    .eq("quem", usuario)
+    .eq("concluida", false)
+    .eq("cancelada", false);
+
+  const tarefas = (data ?? []) as Pick<Tarefa, "quando" | "concluida" | "cancelada">[];
+  const pendentes = tarefas.filter((t) => getStatus(t) === "pendente").length;
+
+  return { total: tarefas.length, pendentes };
 }

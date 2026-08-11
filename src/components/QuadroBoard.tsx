@@ -27,6 +27,7 @@ interface QuadroBoardProps {
   conclusoes: ConclusaoComTarefa[];
   usuarioAtual: string;
   isAdmin: boolean;
+  usuarios: string[];
 }
 
 type ModalState =
@@ -46,6 +47,7 @@ export function QuadroBoard({
   conclusoes,
   usuarioAtual,
   isAdmin,
+  usuarios,
 }: QuadroBoardProps) {
   const [filtro, setFiltro] = useState<FiltroStatus>("todas");
   const [modal, setModal] = useState<ModalState | null>(null);
@@ -123,7 +125,7 @@ export function QuadroBoard({
       </div>
 
       {modal?.type === "form" && (
-        <TaskFormModal quadro={quadro} tarefa={modal.tarefa} onClose={() => setModal(null)} />
+        <TaskFormModal quadro={quadro} tarefa={modal.tarefa} usuarios={usuarios} onClose={() => setModal(null)} />
       )}
       {modal?.type === "adiar" && <AdiarModal tarefa={modal.tarefa} onClose={() => setModal(null)} />}
       {modal?.type === "concluir" && (
