@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUsuarioAtual } from "@/lib/data/tarefas";
 import { isAdminAtual } from "@/lib/data/admin";
 import { proximaData } from "@/lib/domain/recurrence";
-import type { Periodicidade, Quadro, Tarefa, Tipo } from "@/lib/types";
+import type { CampoAlterado, Mudancas, Periodicidade, Quadro, Tarefa, Tipo } from "@/lib/types";
 
 export interface ActionResult {
   error?: string;
@@ -79,21 +79,38 @@ export async function editarTarefa(formData: FormData): Promise<ActionResult> {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("tarefas")
-    .update({
-      tipo,
-      o_que,
-      descricao: descricao || null,
-      quando,
-      quem,
-      local: tipo === "externa" ? local : null,
-      cidade: tipo === "externa" ? cidade : null,
-      periodicidade,
-    })
-    .eq("id", id);
 
+  const { data: atual, error: fetchError } = await supabase.from("tarefas").select("*").eq("id", id).single();
+  if (fetchError || !atual) return { error: "Tarefa não encontrada." };
+  const antes = atual as Tarefa;
+
+  const depois: Pick<Tarefa, CampoAlterado> = {
+    tipo,
+    o_que,
+    descricao: descricao || null,
+    quando,
+    quem,
+    local: tipo === "externa" ? local : null,
+    cidade: tipo === "externa" ? cidade : null,
+    periodicidade,
+  };
+
+  const mudancas: Mudancas = {};
+  for (const campo of Object.keys(depois) as CampoAlterado[]) {
+    const valorAnterior = (antes[campo] ?? null) as string | null;
+    const valorNovo = depois[campo] as string | null;
+    if (valorAnterior !== valorNovo) {
+      mudancas[campo] = { de: valorAnterior, para: valorNovo };
+    }
+  }
+
+  const { error } = await supabase.from("tarefas").update(depois).eq("id", id);
   if (error) return { error: "Não foi possível salvar as alterações." };
+
+  if (Object.keys(mudancas).length > 0) {
+    const alteradoPor = await getUsuarioAtual(supabase);
+    await supabase.from("alteracoes").insert({ tarefa_id: id, alterado_por: alteradoPor, mudancas });
+  }
 
   revalidarQuadros();
   return {};

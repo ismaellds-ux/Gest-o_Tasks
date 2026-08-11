@@ -13,6 +13,7 @@ import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { CancelarTarefaModal } from "@/components/CancelarTarefaModal";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { ConclusoesListModal } from "@/components/ConclusoesListModal";
+import { HistoricoModal } from "@/components/HistoricoModal";
 import { getStatus } from "@/lib/domain/status";
 import { agruparPorData } from "@/lib/domain/grouping";
 import { computeStats } from "@/lib/domain/stats";
@@ -37,6 +38,7 @@ type ModalState =
   | { type: "concluir"; tarefa: Tarefa }
   | { type: "excluir"; tarefa: Tarefa }
   | { type: "cancelar"; tarefa: Tarefa }
+  | { type: "historico"; tarefa: Tarefa }
   | { type: "conclusoes" };
 
 export function QuadroBoard({
@@ -133,6 +135,7 @@ export function QuadroBoard({
       )}
       {modal?.type === "excluir" && <DeleteConfirmModal tarefa={modal.tarefa} onClose={() => setModal(null)} />}
       {modal?.type === "cancelar" && <CancelarTarefaModal tarefa={modal.tarefa} onClose={() => setModal(null)} />}
+      {modal?.type === "historico" && <HistoricoModal tarefaId={modal.tarefa.id} onClose={() => setModal(null)} />}
       {modal?.type === "conclusoes" && (
         <ConclusoesListModal conclusoes={conclusoes} onClose={() => setModal(null)} />
       )}
@@ -147,6 +150,7 @@ export function QuadroBoard({
           onConcluir={() => setModal({ type: "concluir", tarefa: modal.tarefa })}
           onExcluir={() => setModal({ type: "excluir", tarefa: modal.tarefa })}
           onCancelar={() => setModal({ type: "cancelar", tarefa: modal.tarefa })}
+          onHistorico={() => setModal({ type: "historico", tarefa: modal.tarefa })}
         />
       )}
     </div>

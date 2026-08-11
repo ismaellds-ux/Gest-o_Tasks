@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Ban, CalendarClock, CheckCircle2, MapPin, Pencil, RotateCcw, Square, Trash2, User } from "lucide-react";
+import { Ban, CalendarClock, CheckCircle2, History, MapPin, Pencil, RotateCcw, Square, Trash2, User } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { StatusBadge, TipoBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/Button";
@@ -21,6 +21,7 @@ interface TaskDetailModalProps {
   onConcluir: () => void;
   onExcluir: () => void;
   onCancelar: () => void;
+  onHistorico: () => void;
 }
 
 export function TaskDetailModal({
@@ -33,6 +34,7 @@ export function TaskDetailModal({
   onConcluir,
   onExcluir,
   onCancelar,
+  onHistorico,
 }: TaskDetailModalProps) {
   const status = getStatus(tarefa);
   const ativa = status !== "concluida" && status !== "cancelada";
@@ -137,6 +139,9 @@ export function TaskDetailModal({
           )}
           <Button tone="default" icon={<Pencil size={15} />} onClick={onEditar}>
             Editar
+          </Button>
+          <Button tone="ghost" icon={<History size={15} />} onClick={onHistorico}>
+            Histórico
           </Button>
           {ativa && tarefa.periodicidade !== "unica" && (
             <Button tone="default" icon={<Square size={15} />} onClick={encerrar} disabled={pending}>

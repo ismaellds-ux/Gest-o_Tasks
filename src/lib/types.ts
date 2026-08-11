@@ -48,6 +48,18 @@ export type Conclusao = {
   concluido_por: string;
 };
 
+export type CampoAlterado = "tipo" | "o_que" | "descricao" | "quando" | "quem" | "local" | "cidade" | "periodicidade";
+
+export type Mudancas = Partial<Record<CampoAlterado, { de: string | null; para: string | null }>>;
+
+export type Alteracao = {
+  id: string;
+  tarefa_id: string;
+  alterado_por: string;
+  alterado_em: string;
+  mudancas: Mudancas;
+};
+
 export type Usuario = {
   id: string;
   usuario: string;
@@ -91,6 +103,12 @@ export type Database = {
         Insert: Omit<Conclusao, "id" | "data_conclusao"> &
           Partial<Pick<Conclusao, "id" | "data_conclusao">>;
         Update: Partial<Conclusao>;
+        Relationships: [];
+      };
+      alteracoes: {
+        Row: Alteracao;
+        Insert: Omit<Alteracao, "id" | "alterado_em"> & Partial<Pick<Alteracao, "id" | "alterado_em">>;
+        Update: Partial<Alteracao>;
         Relationships: [];
       };
     };

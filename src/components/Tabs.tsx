@@ -3,14 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const TABS = [
-  { href: "/tasks1", label: "Tasks 1" },
-  { href: "/tasks2", label: "Tasks 2" },
-];
+interface TabsProps {
+  isAdmin: boolean;
+  podeVerTasks2: boolean;
+}
 
-export function Tabs({ isAdmin }: { isAdmin: boolean }) {
+export function Tabs({ isAdmin, podeVerTasks2 }: TabsProps) {
   const pathname = usePathname();
-  const tabs = isAdmin ? [...TABS, { href: "/admin", label: "Admin" }] : TABS;
+
+  const tabs = [
+    { href: "/tasks1", label: "Tasks 1" },
+    ...(podeVerTasks2 ? [{ href: "/tasks2", label: "Tasks 2" }] : []),
+    ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+  ];
 
   return (
     <nav className="flex gap-1.5">
