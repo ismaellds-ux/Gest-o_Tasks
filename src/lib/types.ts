@@ -14,6 +14,7 @@ export type Tarefa = {
   descricao: string | null;
   quando: string; // date (YYYY-MM-DD)
   quem: string;
+  atribuido_por: string | null;
   local: string | null;
   cidade: string | null;
   periodicidade: Periodicidade;
@@ -80,12 +81,28 @@ export type Database = {
         Row: Tarefa;
         Insert: Omit<
           Tarefa,
-          "id" | "criado_em" | "concluida" | "concluido_por" | "cancelada" | "motivo_cancelamento" | "cancelado_por" | "cancelado_em"
+          | "id"
+          | "criado_em"
+          | "concluida"
+          | "concluido_por"
+          | "cancelada"
+          | "motivo_cancelamento"
+          | "cancelado_por"
+          | "cancelado_em"
+          | "atribuido_por"
         > &
           Partial<
             Pick<
               Tarefa,
-              "id" | "criado_em" | "concluida" | "concluido_por" | "cancelada" | "motivo_cancelamento" | "cancelado_por" | "cancelado_em"
+              | "id"
+              | "criado_em"
+              | "concluida"
+              | "concluido_por"
+              | "cancelada"
+              | "motivo_cancelamento"
+              | "cancelado_por"
+              | "cancelado_em"
+              | "atribuido_por"
             >
           >;
         Update: Partial<Tarefa>;

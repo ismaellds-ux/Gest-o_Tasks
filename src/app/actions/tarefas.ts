@@ -48,6 +48,7 @@ export async function criarTarefa(formData: FormData): Promise<ActionResult> {
     descricao: descricao || null,
     quando,
     quem,
+    atribuido_por: criado_por,
     local: tipo === "externa" ? local : null,
     cidade: tipo === "externa" ? cidade : null,
     periodicidade,
@@ -104,11 +105,15 @@ export async function editarTarefa(formData: FormData): Promise<ActionResult> {
     }
   }
 
-  const { error } = await supabase.from("tarefas").update(depois).eq("id", id);
+  const houveMudancas = Object.keys(mudancas).length > 0;
+  const alteradoPor = houveMudancas ? await getUsuarioAtual(supabase) : null;
+
+  const atualizacao = mudancas.quem && alteradoPor ? { ...depois, atribuido_por: alteradoPor } : depois;
+
+  const { error } = await supabase.from("tarefas").update(atualizacao).eq("id", id);
   if (error) return { error: "Não foi possível salvar as alterações." };
 
-  if (Object.keys(mudancas).length > 0) {
-    const alteradoPor = await getUsuarioAtual(supabase);
+  if (houveMudancas && alteradoPor) {
     await supabase.from("alteracoes").insert({ tarefa_id: id, alterado_por: alteradoPor, mudancas });
   }
 

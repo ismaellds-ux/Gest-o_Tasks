@@ -72,6 +72,12 @@ export function TaskCard({
             <User size={12} /> {tarefa.quem}
           </span>
         </div>
+        {tarefa.atribuido_por && (
+          <div>
+            <span className="label-caps block">Atribuída por</span>
+            <span className="mt-0.5 inline-block text-fg-muted">{tarefa.atribuido_por}</span>
+          </div>
+        )}
         {tarefa.tipo === "externa" && (tarefa.local || tarefa.cidade) && (
           <div>
             <span className="label-caps block">Local</span>

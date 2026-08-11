@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getStatus } from "@/lib/domain/status";
+import { USUARIO_TODOS } from "@/lib/domain/permissoes";
 import type { Adiamento, Conclusao, Quadro, Tarefa } from "@/lib/types";
 
 export interface ConclusaoComTarefa extends Conclusao {
@@ -71,7 +72,7 @@ export async function contarMinhasTarefas(supabase: SupabaseClient<any>, usuario
   const { data } = await supabase
     .from("tarefas")
     .select("quando, concluida, cancelada")
-    .eq("quem", usuario)
+    .in("quem", [usuario, USUARIO_TODOS])
     .eq("concluida", false)
     .eq("cancelada", false);
 

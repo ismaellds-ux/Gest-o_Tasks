@@ -13,6 +13,10 @@ export async function isAdminAtual(supabase: SupabaseClient<Database>): Promise<
 }
 
 export async function listarUsuarios(supabase: SupabaseClient<Database>): Promise<Usuario[]> {
-  const { data } = await supabase.from("usuarios").select("*").order("criado_em", { ascending: true });
+  const { data } = await supabase
+    .from("usuarios")
+    .select("*")
+    .order("is_admin", { ascending: false })
+    .order("criado_em", { ascending: true });
   return data ?? [];
 }

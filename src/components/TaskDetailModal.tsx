@@ -89,6 +89,12 @@ export function TaskDetailModal({
               <User size={13} /> {tarefa.quem}
             </span>
           </div>
+          {tarefa.atribuido_por && (
+            <div>
+              <span className="label-caps block">Atribuída por</span>
+              <span className="text-fg">{tarefa.atribuido_por}</span>
+            </div>
+          )}
           <div>
             <span className="label-caps block">Demanda</span>
             <TipoBadge tipo={tarefa.tipo} />
@@ -148,9 +154,11 @@ export function TaskDetailModal({
           <Button tone="default" icon={<Pencil size={15} />} onClick={onEditar}>
             Editar
           </Button>
-          <Button tone="ghost" icon={<History size={15} />} onClick={onHistorico}>
-            Histórico
-          </Button>
+          {isAdmin && (
+            <Button tone="ghost" icon={<History size={15} />} onClick={onHistorico}>
+              Histórico
+            </Button>
+          )}
           {ativa && tarefa.periodicidade !== "unica" && (
             <Button tone="default" icon={<Square size={15} />} onClick={encerrar} disabled={pending}>
               Encerrar recorrência

@@ -8,6 +8,7 @@ import { ChipGroup } from "@/components/ChipGroup";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { criarTarefa, editarTarefa } from "@/app/actions/tarefas";
+import { RESPONSAVEL_TASKS2, USUARIO_TODOS } from "@/lib/domain/permissoes";
 import type { Periodicidade, Quadro, Tarefa, Tipo } from "@/lib/types";
 
 interface TaskFormModalProps {
@@ -37,8 +38,9 @@ export function TaskFormModal({ quadro, tarefa, usuarios, onClose }: TaskFormMod
   const showToast = useToast();
 
   const quemInicial =
-    tarefa?.quem ?? (quadro === "tasks2" && usuarios.includes("Felipe") ? "Felipe" : "");
-  const quemForaDaLista = tarefa?.quem && !usuarios.includes(tarefa.quem) ? tarefa.quem : null;
+    tarefa?.quem ?? (quadro === "tasks2" && usuarios.includes(RESPONSAVEL_TASKS2) ? RESPONSAVEL_TASKS2 : "");
+  const quemForaDaLista =
+    tarefa?.quem && tarefa.quem !== USUARIO_TODOS && !usuarios.includes(tarefa.quem) ? tarefa.quem : null;
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -92,6 +94,7 @@ export function TaskFormModal({ quadro, tarefa, usuarios, onClose }: TaskFormMod
               {quemForaDaLista && (
                 <option value={quemForaDaLista}>{quemForaDaLista} (fora da lista atual)</option>
               )}
+              <option value={USUARIO_TODOS}>Todos (qualquer um da equipe)</option>
               {usuarios.map((u) => (
                 <option key={u} value={u}>
                   {u}
