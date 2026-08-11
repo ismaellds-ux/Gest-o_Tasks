@@ -49,7 +49,16 @@ export type Conclusao = {
   concluido_por: string;
 };
 
-export type CampoAlterado = "tipo" | "o_que" | "descricao" | "quando" | "quem" | "local" | "cidade" | "periodicidade";
+export type CampoAlterado =
+  | "tipo"
+  | "o_que"
+  | "descricao"
+  | "quando"
+  | "quem"
+  | "local"
+  | "cidade"
+  | "periodicidade"
+  | "atribuido_por";
 
 export type Mudancas = Partial<Record<CampoAlterado, { de: string | null; para: string | null }>>;
 

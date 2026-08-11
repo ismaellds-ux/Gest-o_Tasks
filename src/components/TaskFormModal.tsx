@@ -15,6 +15,8 @@ interface TaskFormModalProps {
   quadro: Quadro;
   tarefa?: Tarefa;
   usuarios: string[];
+  todosUsuarios: string[];
+  isAdmin: boolean;
   onClose: () => void;
 }
 
@@ -30,7 +32,7 @@ const PERIODICIDADE_OPTIONS: { value: Periodicidade; label: string }[] = [
   { value: "mensal", label: "Mensal" },
 ];
 
-export function TaskFormModal({ quadro, tarefa, usuarios, onClose }: TaskFormModalProps) {
+export function TaskFormModal({ quadro, tarefa, usuarios, todosUsuarios, isAdmin, onClose }: TaskFormModalProps) {
   const [tipo, setTipo] = useState<Tipo>(tarefa?.tipo ?? "interna");
   const [periodicidade, setPeriodicidade] = useState<Periodicidade>(tarefa?.periodicidade ?? "unica");
   const [error, setError] = useState<string>();
@@ -41,6 +43,8 @@ export function TaskFormModal({ quadro, tarefa, usuarios, onClose }: TaskFormMod
     tarefa?.quem ?? (quadro === "tasks2" && usuarios.includes(RESPONSAVEL_TASKS2) ? RESPONSAVEL_TASKS2 : "");
   const quemForaDaLista =
     tarefa?.quem && tarefa.quem !== USUARIO_TODOS && !usuarios.includes(tarefa.quem) ? tarefa.quem : null;
+  const atribuidoPorForaDaLista =
+    tarefa?.atribuido_por && !todosUsuarios.includes(tarefa.atribuido_por) ? tarefa.atribuido_por : null;
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -118,6 +122,22 @@ export function TaskFormModal({ quadro, tarefa, usuarios, onClose }: TaskFormMod
         <Field label="Periodicidade">
           <ChipGroup options={PERIODICIDADE_OPTIONS} value={periodicidade} onChange={setPeriodicidade} />
         </Field>
+
+        {isAdmin && tarefa && (
+          <Field label="Atribuída por">
+            <select name="atribuido_por" defaultValue={tarefa.atribuido_por ?? ""} className={inputClass}>
+              <option value="">Não alterar</option>
+              {atribuidoPorForaDaLista && (
+                <option value={atribuidoPorForaDaLista}>{atribuidoPorForaDaLista} (fora da lista atual)</option>
+              )}
+              {todosUsuarios.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
 
         <FieldError message={error} />
 

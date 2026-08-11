@@ -15,6 +15,7 @@ const ROTULOS_CAMPO: Record<CampoAlterado, string> = {
   local: "Local",
   cidade: "Cidade",
   periodicidade: "Periodicidade",
+  atribuido_por: "Atribuída por",
 };
 
 function formatarValor(valor: string | null): string {

@@ -21,6 +21,7 @@ export default async function Tasks1Page() {
       usuarioAtual={usuarioAtual}
       isAdmin={isAdmin}
       usuarios={usuarios.filter((u) => !u.is_admin).map((u) => u.usuario)}
+      todosUsuarios={usuarios.map((u) => u.usuario)}
     />
   );
 }
