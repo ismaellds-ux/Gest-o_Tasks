@@ -116,6 +116,21 @@ export async function editarTarefa(formData: FormData): Promise<ActionResult> {
   return {};
 }
 
+export async function excluirConclusao(formData: FormData): Promise<ActionResult> {
+  const id = str(formData, "id");
+  if (!id) return { error: "Registro inválido." };
+
+  const supabase = await createClient();
+  const admin = await isAdminAtual(supabase);
+  if (!admin) return { error: "Só administradores podem excluir registros do histórico." };
+
+  const { error } = await supabase.from("conclusoes").delete().eq("id", id);
+  if (error) return { error: "Não foi possível excluir o registro." };
+
+  revalidarQuadros();
+  return {};
+}
+
 export async function excluirTarefa(formData: FormData): Promise<ActionResult> {
   const id = str(formData, "id");
   if (!id) return { error: "Tarefa inválida." };

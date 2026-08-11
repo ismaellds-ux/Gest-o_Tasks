@@ -134,7 +134,7 @@ export function QuadroBoard({
       {modal?.type === "cancelar" && <CancelarTarefaModal tarefa={modal.tarefa} onClose={() => setModal(null)} />}
       {modal?.type === "historico" && <HistoricoModal tarefaId={modal.tarefa.id} onClose={() => setModal(null)} />}
       {modal?.type === "conclusoes" && (
-        <ConclusoesListModal conclusoes={conclusoes} onClose={() => setModal(null)} />
+        <ConclusoesListModal conclusoes={conclusoes} isAdmin={isAdmin} onClose={() => setModal(null)} />
       )}
       {modal?.type === "detalhes" && (
         <TaskDetailModal
