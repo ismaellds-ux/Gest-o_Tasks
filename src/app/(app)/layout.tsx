@@ -2,6 +2,7 @@ import { ListChecks, LogOut } from "lucide-react";
 import { Tabs } from "@/components/Tabs";
 import { Logo } from "@/components/Logo";
 import { ToastProvider } from "@/components/Toast";
+import { TrocarSenhaButton } from "@/components/TrocarSenhaButton";
 import { createClient } from "@/lib/supabase/server";
 import { contarMinhasTarefas, getUsuarioAtual } from "@/lib/data/tarefas";
 import { isAdminAtual } from "@/lib/data/admin";
@@ -21,15 +22,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <Logo />
             <Tabs isAdmin={admin} podeVerTasks2={podeAcessarTasks2(usuario, admin)} />
           </div>
-          <form action={sair} className="flex items-center gap-3">
-            <span className="hidden text-sm text-fg-secondary sm:inline">{usuario}</span>
-            <button
-              type="submit"
-              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-fg-secondary hover:bg-surface-light hover:text-fg"
-            >
-              <LogOut size={14} /> Sair
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="hidden text-sm text-fg-secondary sm:inline">{usuario}</span>
+              <TrocarSenhaButton />
+            </div>
+            <form action={sair}>
+              <button
+                type="submit"
+                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-fg-secondary hover:bg-surface-light hover:text-fg"
+              >
+                <LogOut size={14} /> Sair
+              </button>
+            </form>
+          </div>
         </header>
 
         {minhasTarefas.total > 0 && (

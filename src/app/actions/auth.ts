@@ -28,6 +28,23 @@ export async function entrar(
   redirect("/tasks1");
 }
 
+export interface ActionResult {
+  error?: string;
+}
+
+export async function alterarMinhaSenha(formData: FormData): Promise<ActionResult> {
+  const novaSenha = String(formData.get("nova_senha") ?? "");
+  if (novaSenha.length < 6) {
+    return { error: "A senha precisa ter pelo menos 6 caracteres." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: novaSenha });
+  if (error) return { error: "Não foi possível trocar a senha." };
+
+  return {};
+}
+
 export async function sair() {
   const supabase = await createClient();
   await supabase.auth.signOut();
