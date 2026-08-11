@@ -22,6 +22,12 @@ export function diffDaysISO(fromISO: string, toISO: string): number {
   return Math.round((toMs - fromMs) / 86_400_000);
 }
 
+// 0 = domingo, 6 = sábado
+export function diaDaSemana(dateISO: string): number {
+  const [y, m, d] = dateISO.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+
 export function formatDateBR(dateISO: string): string {
   const [y, m, d] = dateISO.split("-");
   return `${d}/${m}/${y}`;

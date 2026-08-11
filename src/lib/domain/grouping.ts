@@ -1,5 +1,5 @@
 import type { Tarefa } from "@/lib/types";
-import { diffDaysISO, todayISO } from "@/lib/domain/date";
+import { addDaysISO, diaDaSemana, diffDaysISO, todayISO } from "@/lib/domain/date";
 
 export type GrupoData =
   | "atrasadas"
@@ -20,12 +20,20 @@ const LABELS: Record<GrupoData, string> = {
 
 const SEMPRE_VISIVEL: GrupoData[] = ["hoje", "amanha", "semana_que_vem", "mes_que_vem"];
 
+// Semana civil: domingo a sábado. "Semana que vem" cobre do dia depois de
+// amanhã até o fim da próxima semana civil (o tamanho da faixa varia conforme
+// o dia da semana de hoje).
+function fimDaProximaSemanaCivil(today: string): string {
+  const fimDestaSemana = addDaysISO(today, 6 - diaDaSemana(today));
+  return addDaysISO(fimDestaSemana, 7);
+}
+
 export function bucketDe(quando: string, today = todayISO()): GrupoData {
   const diff = diffDaysISO(today, quando);
   if (diff < 0) return "atrasadas";
   if (diff === 0) return "hoje";
   if (diff === 1) return "amanha";
-  if (diff <= 7) return "semana_que_vem";
+  if (quando <= fimDaProximaSemanaCivil(today)) return "semana_que_vem";
   if (diff <= 30) return "mes_que_vem";
   return "mais_adiante";
 }
