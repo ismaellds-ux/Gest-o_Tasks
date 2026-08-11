@@ -88,6 +88,22 @@ export function QuadroBoard({
         onAbrirConclusoes={() => setModal({ type: "conclusoes" })}
       />
 
+      {filtro === "todas" && tarefasFiltradas.length === 0 && (stats.concluidas > 0 || stats.canceladas > 0) && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border-soft bg-surface-elevated px-4 py-3 text-sm text-fg-secondary">
+          <span>Nenhuma tarefa ativa no momento.</span>
+          {stats.concluidas > 0 && (
+            <button type="button" onClick={() => setFiltro("concluidas")} className="font-medium text-green hover:underline">
+              Ver {stats.concluidas} concluída{stats.concluidas === 1 ? "" : "s"}
+            </button>
+          )}
+          {stats.canceladas > 0 && (
+            <button type="button" onClick={() => setFiltro("canceladas")} className="font-medium text-coral hover:underline">
+              Ver {stats.canceladas} cancelada{stats.canceladas === 1 ? "" : "s"}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col gap-6">
         {grupos.map((grupo) => (
           <DateGroupSection
