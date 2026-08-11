@@ -24,7 +24,6 @@ interface QuadroBoardProps {
   quadro: Quadro;
   tarefas: Tarefa[];
   ultimoAdiamentoPorTarefa: Record<string, Adiamento>;
-  tarefasComConclusaoIds: string[];
   conclusoes: ConclusaoComTarefa[];
   usuarioAtual: string;
   isAdmin: boolean;
@@ -45,7 +44,6 @@ export function QuadroBoard({
   quadro,
   tarefas,
   ultimoAdiamentoPorTarefa,
-  tarefasComConclusaoIds,
   conclusoes,
   usuarioAtual,
   isAdmin,
@@ -54,15 +52,14 @@ export function QuadroBoard({
   const [filtro, setFiltro] = useState<FiltroStatus>("todas");
   const [modal, setModal] = useState<ModalState | null>(null);
 
-  const tarefasComConclusao = useMemo(() => new Set(tarefasComConclusaoIds), [tarefasComConclusaoIds]);
   const adiamentoMap = useMemo(() => new Map(Object.entries(ultimoAdiamentoPorTarefa)), [ultimoAdiamentoPorTarefa]);
 
-  const stats = useMemo(() => computeStats(tarefas, tarefasComConclusao), [tarefas, tarefasComConclusao]);
+  const stats = useMemo(() => computeStats(tarefas), [tarefas]);
 
   const tarefasFiltradas = useMemo(() => {
-    if (filtro === "todas") return tarefas;
     return tarefas.filter((t) => {
       const status = getStatus(t);
+      if (filtro === "todas") return status === "em_aberto" || status === "pendente";
       if (filtro === "em_aberto") return status === "em_aberto";
       if (filtro === "pendentes") return status === "pendente";
       if (filtro === "canceladas") return status === "cancelada";

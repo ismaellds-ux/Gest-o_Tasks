@@ -18,21 +18,19 @@ export interface Stats {
   porTipo: Record<Tipo, StatsBucket>;
 }
 
-function contaConcluida(tarefa: Tarefa, tarefasComConclusao: Set<string>): boolean {
-  if (tarefa.cancelada) return false;
-  if (tarefa.concluida) return true;
-  return tarefa.periodicidade !== "unica" && tarefasComConclusao.has(tarefa.id);
+// Recorrentes não têm um "concluído" permanente (o ciclo sempre reabre), então
+// não entram no numerador nem no denominador do % concluído — só tarefas
+// únicas contam pra esse percentual. Canceladas também ficam de fora.
+function contaNoPercentual(tarefa: Tarefa): boolean {
+  return !tarefa.cancelada && tarefa.periodicidade === "unica";
 }
 
-export function computeStats(
-  tarefas: Tarefa[],
-  tarefasComConclusao: Set<string>,
-  today = todayISO(),
-): Stats {
+export function computeStats(tarefas: Tarefa[], today = todayISO()): Stats {
   let concluidas = 0;
   let pendentes = 0;
   let emAberto = 0;
   let canceladas = 0;
+  let validas = 0;
 
   const porTipo: Record<Tipo, StatsBucket & { validas: number }> = {
     interna: { total: 0, concluidas: 0, pct: 0, validas: 0 },
@@ -45,12 +43,14 @@ export function computeStats(
     if (status === "em_aberto") emAberto += 1;
     if (status === "cancelada") canceladas += 1;
 
-    const concluida = contaConcluida(tarefa, tarefasComConclusao);
+    const contaTarefa = contaNoPercentual(tarefa);
+    const concluida = contaTarefa && tarefa.concluida;
+    if (contaTarefa) validas += 1;
     if (concluida) concluidas += 1;
 
     const bucket = porTipo[tarefa.tipo];
     bucket.total += 1;
-    if (!tarefa.cancelada) bucket.validas += 1;
+    if (contaTarefa) bucket.validas += 1;
     if (concluida) bucket.concluidas += 1;
   }
 
@@ -58,8 +58,6 @@ export function computeStats(
     const bucket = porTipo[tipo];
     bucket.pct = bucket.validas > 0 ? Math.round((bucket.concluidas / bucket.validas) * 100) : 0;
   }
-
-  const validas = tarefas.length - canceladas;
 
   return {
     total: tarefas.length,

@@ -10,7 +10,6 @@ export interface ConclusaoComTarefa extends Conclusao {
 export interface QuadroData {
   tarefas: Tarefa[];
   ultimoAdiamentoPorTarefa: Map<string, Adiamento>;
-  tarefasComConclusao: Set<string>;
   conclusoes: ConclusaoComTarefa[];
 }
 
@@ -46,12 +45,10 @@ export async function getQuadroData(supabase: SupabaseClient<any>, quadro: Quadr
   }
 
   const conclusoes = (conclusoesRows ?? []) as unknown as ConclusaoComTarefa[];
-  const tarefasComConclusao = new Set(conclusoes.map((c) => c.tarefa_id));
 
   return {
     tarefas: (tarefas ?? []) as Tarefa[],
     ultimoAdiamentoPorTarefa,
-    tarefasComConclusao,
     conclusoes,
   };
 }

@@ -13,7 +13,7 @@ export default async function Tasks2Page() {
     redirect("/tasks1");
   }
 
-  const [{ tarefas, ultimoAdiamentoPorTarefa, tarefasComConclusao, conclusoes }, usuarios] = await Promise.all([
+  const [{ tarefas, ultimoAdiamentoPorTarefa, conclusoes }, usuarios] = await Promise.all([
     getQuadroData(supabase, "tasks2"),
     listarUsuarios(supabase),
   ]);
@@ -23,7 +23,6 @@ export default async function Tasks2Page() {
       quadro="tasks2"
       tarefas={tarefas}
       ultimoAdiamentoPorTarefa={Object.fromEntries(ultimoAdiamentoPorTarefa)}
-      tarefasComConclusaoIds={Array.from(tarefasComConclusao)}
       conclusoes={conclusoes}
       usuarioAtual={usuarioAtual}
       isAdmin={isAdmin}
