@@ -1,7 +1,7 @@
 "use client";
 
 import type { MouseEvent } from "react";
-import { CalendarClock, CheckCircle2, MapPin, Pencil, User } from "lucide-react";
+import { Ban, CalendarClock, CheckCircle2, MapPin, Pencil, Trash2, User } from "lucide-react";
 import { StatusBadge, TipoBadge, corBordaTipo } from "@/components/StatusBadge";
 import { Button } from "@/components/Button";
 import { getStatus } from "@/lib/domain/status";
@@ -11,14 +11,28 @@ import type { Adiamento, Tarefa } from "@/lib/types";
 interface TaskCardProps {
   tarefa: Tarefa;
   ultimoAdiamento?: Adiamento;
+  isAdmin: boolean;
   onAbrirDetalhes: () => void;
   onConcluir: () => void;
   onAdiar: () => void;
   onEditar: () => void;
+  onExcluir: () => void;
+  onCancelar: () => void;
 }
 
-export function TaskCard({ tarefa, ultimoAdiamento, onAbrirDetalhes, onConcluir, onAdiar, onEditar }: TaskCardProps) {
+export function TaskCard({
+  tarefa,
+  ultimoAdiamento,
+  isAdmin,
+  onAbrirDetalhes,
+  onConcluir,
+  onAdiar,
+  onEditar,
+  onExcluir,
+  onCancelar,
+}: TaskCardProps) {
   const status = getStatus(tarefa);
+  const ativa = status !== "concluida" && status !== "cancelada";
 
   function pararPropagacao(fn: () => void) {
     return (e: MouseEvent) => {
@@ -67,22 +81,35 @@ export function TaskCard({ tarefa, ultimoAdiamento, onAbrirDetalhes, onConcluir,
         <p className="mt-1 text-xs text-amber">Último adiamento: &ldquo;{ultimoAdiamento.motivo}&rdquo;</p>
       )}
 
-      {status !== "concluida" && status !== "cancelada" && (
-        <div className="mt-3 flex flex-wrap gap-2 border-t border-border-soft pt-3">
-          <Button tone="success" icon={<CheckCircle2 size={14} />} onClick={pararPropagacao(onConcluir)} className="px-2.5 py-1.5 text-xs">
-            Concluir
+      <div className="mt-3 flex flex-wrap gap-2 border-t border-border-soft pt-3">
+        {ativa && (
+          <>
+            <Button tone="success" icon={<CheckCircle2 size={14} />} onClick={pararPropagacao(onConcluir)} className="px-2.5 py-1.5 text-xs">
+              Concluir
+            </Button>
+            <Button tone="warn" icon={<CalendarClock size={14} />} onClick={pararPropagacao(onAdiar)} className="px-2.5 py-1.5 text-xs">
+              Adiar
+            </Button>
+            <Button tone="default" icon={<Pencil size={14} />} onClick={pararPropagacao(onEditar)} className="px-2.5 py-1.5 text-xs">
+              Editar
+            </Button>
+          </>
+        )}
+        {isAdmin ? (
+          <Button tone="danger" icon={<Trash2 size={14} />} onClick={pararPropagacao(onExcluir)} className="px-2.5 py-1.5 text-xs">
+            Excluir
           </Button>
-          <Button tone="warn" icon={<CalendarClock size={14} />} onClick={pararPropagacao(onAdiar)} className="px-2.5 py-1.5 text-xs">
-            Adiar
-          </Button>
-          <Button tone="default" icon={<Pencil size={14} />} onClick={pararPropagacao(onEditar)} className="px-2.5 py-1.5 text-xs">
-            Editar
-          </Button>
-          <Button tone="ghost" onClick={pararPropagacao(onAbrirDetalhes)} className="ml-auto px-2.5 py-1.5 text-xs">
-            Detalhes
-          </Button>
-        </div>
-      )}
+        ) : (
+          ativa && (
+            <Button tone="danger" icon={<Ban size={14} />} onClick={pararPropagacao(onCancelar)} className="px-2.5 py-1.5 text-xs">
+              Cancelar
+            </Button>
+          )
+        )}
+        <Button tone="ghost" onClick={pararPropagacao(onAbrirDetalhes)} className="ml-auto px-2.5 py-1.5 text-xs">
+          Detalhes
+        </Button>
+      </div>
     </div>
   );
 }

@@ -93,6 +93,7 @@ export function QuadroBoard({
             key={grupo.key}
             grupo={grupo}
             ultimoAdiamentoPorTarefa={adiamentoMap}
+            isAdmin={isAdmin}
             onAbrirDetalhes={(id) => {
               const t = tarefaPorId(id);
               if (t) setModal({ type: "detalhes", tarefa: t });
@@ -108,6 +109,14 @@ export function QuadroBoard({
             onEditar={(id) => {
               const t = tarefaPorId(id);
               if (t) setModal({ type: "form", tarefa: t });
+            }}
+            onExcluir={(id) => {
+              const t = tarefaPorId(id);
+              if (t) setModal({ type: "excluir", tarefa: t });
+            }}
+            onCancelar={(id) => {
+              const t = tarefaPorId(id);
+              if (t) setModal({ type: "cancelar", tarefa: t });
             }}
           />
         ))}

@@ -5,19 +5,25 @@ import type { Adiamento } from "@/lib/types";
 interface DateGroupSectionProps {
   grupo: GrupoTarefas;
   ultimoAdiamentoPorTarefa: Map<string, Adiamento>;
+  isAdmin: boolean;
   onAbrirDetalhes: (id: string) => void;
   onConcluir: (id: string) => void;
   onAdiar: (id: string) => void;
   onEditar: (id: string) => void;
+  onExcluir: (id: string) => void;
+  onCancelar: (id: string) => void;
 }
 
 export function DateGroupSection({
   grupo,
   ultimoAdiamentoPorTarefa,
+  isAdmin,
   onAbrirDetalhes,
   onConcluir,
   onAdiar,
   onEditar,
+  onExcluir,
+  onCancelar,
 }: DateGroupSectionProps) {
   return (
     <section>
@@ -36,10 +42,13 @@ export function DateGroupSection({
               key={tarefa.id}
               tarefa={tarefa}
               ultimoAdiamento={ultimoAdiamentoPorTarefa.get(tarefa.id)}
+              isAdmin={isAdmin}
               onAbrirDetalhes={() => onAbrirDetalhes(tarefa.id)}
               onConcluir={() => onConcluir(tarefa.id)}
               onAdiar={() => onAdiar(tarefa.id)}
               onEditar={() => onEditar(tarefa.id)}
+              onExcluir={() => onExcluir(tarefa.id)}
+              onCancelar={() => onCancelar(tarefa.id)}
             />
           ))}
         </div>
