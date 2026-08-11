@@ -68,22 +68,30 @@ export function TaskDetailModal({
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={status} />
-          <TipoBadge tipo={tarefa.tipo} />
           <span className="label-caps">{tarefa.periodicidade}</span>
         </div>
 
-        {tarefa.descricao && <p className="text-sm text-fg-secondary">{tarefa.descricao}</p>}
+        {tarefa.descricao && (
+          <div>
+            <span className="label-caps block">Descritivo da demanda</span>
+            <p className="mt-0.5 text-sm text-fg-secondary">{tarefa.descricao}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded-xl border border-border-soft bg-surface-elevated p-4 text-sm">
           <div>
-            <span className="label-caps block">Quando</span>
+            <span className="label-caps block">Data</span>
             <span className="text-fg">{formatDateBR(tarefa.quando)}</span>
           </div>
           <div>
-            <span className="label-caps block">Quem</span>
+            <span className="label-caps block">Quem executa</span>
             <span className="flex items-center gap-1 text-fg">
               <User size={13} /> {tarefa.quem}
             </span>
+          </div>
+          <div>
+            <span className="label-caps block">Demanda</span>
+            <TipoBadge tipo={tarefa.tipo} />
           </div>
           {tarefa.tipo === "externa" && (
             <div className="col-span-2">

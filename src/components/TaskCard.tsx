@@ -52,22 +52,46 @@ export function TaskCard({
         <StatusBadge status={status} />
       </div>
 
-      {tarefa.descricao && <p className="mt-1 line-clamp-2 text-sm text-fg-secondary">{tarefa.descricao}</p>}
+      {tarefa.descricao && (
+        <div className="mt-2">
+          <span className="label-caps block">Descritivo da demanda</span>
+          <p className="mt-0.5 line-clamp-2 text-sm text-fg-secondary">{tarefa.descricao}</p>
+        </div>
+      )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-fg-muted">
-        <span className="flex items-center gap-1">
-          <CalendarClock size={12} /> {formatDateBR(tarefa.quando)}
-        </span>
-        <span className="flex items-center gap-1">
-          <User size={12} /> {tarefa.quem}
-        </span>
-        {tarefa.tipo === "externa" && (tarefa.local || tarefa.cidade) && (
-          <span className="flex items-center gap-1">
-            <MapPin size={12} /> {[tarefa.local, tarefa.cidade].filter(Boolean).join(" — ")}
+      <div className="mt-3 flex flex-wrap items-start gap-x-5 gap-y-2 text-xs">
+        <div>
+          <span className="label-caps block">Data</span>
+          <span className="mt-0.5 flex items-center gap-1 text-fg-muted">
+            <CalendarClock size={12} /> {formatDateBR(tarefa.quando)}
           </span>
+        </div>
+        <div>
+          <span className="label-caps block">Quem executa</span>
+          <span className="mt-0.5 flex items-center gap-1 text-fg-muted">
+            <User size={12} /> {tarefa.quem}
+          </span>
+        </div>
+        {tarefa.tipo === "externa" && (tarefa.local || tarefa.cidade) && (
+          <div>
+            <span className="label-caps block">Local</span>
+            <span className="mt-0.5 flex items-center gap-1 text-fg-muted">
+              <MapPin size={12} /> {[tarefa.local, tarefa.cidade].filter(Boolean).join(" — ")}
+            </span>
+          </div>
         )}
-        <TipoBadge tipo={tarefa.tipo} />
-        {tarefa.periodicidade !== "unica" && <span className="label-caps">{tarefa.periodicidade}</span>}
+        <div>
+          <span className="label-caps block">Demanda</span>
+          <span className="mt-0.5 inline-block">
+            <TipoBadge tipo={tarefa.tipo} />
+          </span>
+        </div>
+        {tarefa.periodicidade !== "unica" && (
+          <div>
+            <span className="label-caps block">Periodicidade</span>
+            <span className="mt-0.5 inline-block text-fg-muted">{tarefa.periodicidade}</span>
+          </div>
+        )}
       </div>
 
       {tarefa.cancelada ? (
