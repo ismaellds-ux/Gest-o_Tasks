@@ -12,7 +12,7 @@ const alturaTouro = Math.round(meta.height * 0.68); // recorta fora o texto "STI
 // A logo original é preto sobre fundo branco opaco (sem alpha). Construímos uma
 // máscara de alpha a partir do brilho (branco -> transparente, preto -> opaco) e
 // juntamos a um preenchimento sólido, gerando um touro com fundo de verdade transparente.
-async function touroRecortado(corTraco = { r: 0, g: 0, b: 0 }) {
+async function touroRecortado(corTraco = { r: 255, g: 255, b: 255 }) {
   const mascara = await sharp(origem)
     .extract({ left: 0, top: 0, width: meta.width, height: alturaTouro })
     .grayscale()
