@@ -20,7 +20,7 @@ export default async function Tasks1Page() {
       conclusoes={conclusoes}
       usuarioAtual={usuarioAtual}
       isAdmin={isAdmin}
-      usuarios={usuarios.map((u) => u.usuario)}
+      usuarios={usuarios.filter((u) => !u.is_admin).map((u) => u.usuario)}
     />
   );
 }
