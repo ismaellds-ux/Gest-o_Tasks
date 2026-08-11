@@ -29,6 +29,7 @@ interface QuadroBoardProps {
   isAdmin: boolean;
   usuarios: string[];
   todosUsuarios: string[];
+  podeCriarTarefa: boolean;
 }
 
 type ModalState =
@@ -50,6 +51,7 @@ export function QuadroBoard({
   isAdmin,
   usuarios,
   todosUsuarios,
+  podeCriarTarefa,
 }: QuadroBoardProps) {
   const [filtro, setFiltro] = useState<FiltroStatus>("todas");
   const [modal, setModal] = useState<ModalState | null>(null);
@@ -79,9 +81,13 @@ export function QuadroBoard({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <FilterBar value={filtro} onChange={setFiltro} />
-        <Button tone="success" icon={<Plus size={16} />} onClick={() => setModal({ type: "form" })} className="shrink-0">
-          Nova tarefa
-        </Button>
+        {podeCriarTarefa ? (
+          <Button tone="success" icon={<Plus size={16} />} onClick={() => setModal({ type: "form" })} className="shrink-0">
+            Nova tarefa
+          </Button>
+        ) : (
+          <p className="text-sm text-fg-muted">Só administradores criam tarefas nesse quadro no momento.</p>
+        )}
       </div>
 
       <StatsPanel

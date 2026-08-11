@@ -1,19 +1,28 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
-import { KeyRound, Pencil, Plus, ShieldCheck, ShieldOff, Trash2, UserPlus } from "lucide-react";
+import { CalendarClock, KeyRound, Pencil, Plus, ShieldCheck, ShieldOff, Trash2, UserPlus } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { Field, FieldError, inputClass } from "@/components/Field";
 import { PasswordInput } from "@/components/PasswordInput";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
-import { criarUsuario, editarUsuario, excluirUsuario, alternarAdmin, redefinirSenha } from "@/app/actions/admin";
+import {
+  criarUsuario,
+  editarUsuario,
+  excluirUsuario,
+  alternarAdmin,
+  redefinirSenha,
+  definirJanelaTasks1,
+} from "@/app/actions/admin";
+import { formatDateBR } from "@/lib/domain/date";
 import type { Usuario } from "@/lib/types";
 
 type ModalState =
   | { type: "novo" }
   | { type: "editar"; usuario: Usuario }
   | { type: "senha"; usuario: Usuario }
+  | { type: "janela"; usuario: Usuario }
   | { type: "excluir"; usuario: Usuario };
 
 export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[]; usuarioAtualId: string }) {
@@ -54,6 +63,7 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
               <th className="label-caps px-4 py-3 font-normal">Usuário</th>
               <th className="label-caps px-4 py-3 font-normal">Criado em</th>
               <th className="label-caps px-4 py-3 font-normal">Nível</th>
+              <th className="label-caps px-4 py-3 font-normal">Cria na Tasks1</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -74,8 +84,25 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
                     {u.is_admin ? "Admin" : "Comum"}
                   </span>
                 </td>
+                <td className="px-4 py-3 text-fg-secondary">
+                  {u.is_admin
+                    ? "Sempre"
+                    : u.janela_tasks1_inicio && u.janela_tasks1_fim
+                      ? `${formatDateBR(u.janela_tasks1_inicio)} – ${formatDateBR(u.janela_tasks1_fim)}`
+                      : "Só admin"}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
+                    {!u.is_admin && (
+                      <Button
+                        tone="ghost"
+                        icon={<CalendarClock size={13} />}
+                        onClick={() => setModal({ type: "janela", usuario: u })}
+                        className="px-2.5 py-1.5 text-xs"
+                      >
+                        Janela Tasks1
+                      </Button>
+                    )}
                     {u.id !== usuarioAtualId && (
                       <>
                         <Button
@@ -126,6 +153,7 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
       {modal?.type === "novo" && <NovoUsuarioModal onClose={() => setModal(null)} />}
       {modal?.type === "editar" && <EditarUsuarioModal usuario={modal.usuario} onClose={() => setModal(null)} />}
       {modal?.type === "senha" && <RedefinirSenhaModal usuario={modal.usuario} onClose={() => setModal(null)} />}
+      {modal?.type === "janela" && <JanelaTasks1Modal usuario={modal.usuario} onClose={() => setModal(null)} />}
       {modal?.type === "excluir" && <ExcluirUsuarioModal usuario={modal.usuario} onClose={() => setModal(null)} />}
     </div>
   );
@@ -256,6 +284,57 @@ function RedefinirSenhaModal({ usuario, onClose }: { usuario: Usuario; onClose: 
           </Button>
           <Button type="submit" tone="warn" icon={<KeyRound size={16} />} disabled={pending}>
             {pending ? "Salvando..." : "Redefinir"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function JanelaTasks1Modal({ usuario, onClose }: { usuario: Usuario; onClose: () => void }) {
+  const [error, setError] = useState<string>();
+  const [pending, startTransition] = useTransition();
+  const showToast = useToast();
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    formData.set("id", usuario.id);
+    startTransition(async () => {
+      const result = await definirJanelaTasks1(formData);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      showToast("Janela atualizada!", "success");
+      onClose();
+    });
+  }
+
+  return (
+    <Modal title={`Janela na Tasks1 — ${usuario.usuario}`} onClose={onClose} maxWidth="max-w-sm">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <p className="text-sm text-fg-secondary">
+          Por padrão só administradores criam tarefas na Tasks1. Defina um período pra liberar a criação
+          pra {usuario.usuario} nessa janela. Deixe os dois campos em branco pra bloquear de novo.
+        </p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="De">
+            <input type="date" name="inicio" defaultValue={usuario.janela_tasks1_inicio ?? ""} className={inputClass} />
+          </Field>
+          <Field label="Até">
+            <input type="date" name="fim" defaultValue={usuario.janela_tasks1_fim ?? ""} className={inputClass} />
+          </Field>
+        </div>
+
+        <FieldError message={error} />
+
+        <div className="mt-1 flex justify-end gap-2">
+          <Button type="button" tone="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" tone="success" icon={<CalendarClock size={16} />} disabled={pending}>
+            {pending ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </form>

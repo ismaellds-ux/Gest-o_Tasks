@@ -75,6 +75,8 @@ export type Usuario = {
   usuario: string;
   is_admin: boolean;
   criado_em: string;
+  janela_tasks1_inicio: string | null;
+  janela_tasks1_fim: string | null;
 };
 
 export type Database = {

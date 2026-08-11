@@ -132,6 +132,33 @@ export async function alternarAdmin(formData: FormData): Promise<ActionResult> {
   return {};
 }
 
+export async function definirJanelaTasks1(formData: FormData): Promise<ActionResult> {
+  const acesso = await exigirAdmin();
+  if (acesso.error) return { error: acesso.error };
+
+  const id = str(formData, "id");
+  const inicio = str(formData, "inicio");
+  const fim = str(formData, "fim");
+  if (!id) return { error: "Usuário inválido." };
+  if ((inicio && !fim) || (!inicio && fim)) {
+    return { error: "Informe as duas datas, ou deixe as duas em branco pra bloquear." };
+  }
+  if (inicio && fim && inicio > fim) {
+    return { error: "A data inicial precisa ser antes da data final." };
+  }
+
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
+    .from("usuarios")
+    .update({ janela_tasks1_inicio: inicio || null, janela_tasks1_fim: fim || null })
+    .eq("id", id);
+  if (error) return { error: `Não foi possível salvar a janela: ${error.message}` };
+
+  revalidatePath("/admin");
+  revalidatePath("/tasks1");
+  return {};
+}
+
 export async function redefinirSenha(formData: FormData): Promise<ActionResult> {
   const acesso = await exigirAdmin();
   if (acesso.error) return { error: acesso.error };

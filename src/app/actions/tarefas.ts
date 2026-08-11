@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getUsuarioAtual } from "@/lib/data/tarefas";
-import { isAdminAtual } from "@/lib/data/admin";
+import { isAdminAtual, podeCriarTasks1Atual } from "@/lib/data/admin";
 import { proximaData } from "@/lib/domain/recurrence";
 import type { CampoAlterado, Mudancas, Periodicidade, Quadro, Tarefa, Tipo } from "@/lib/types";
 
@@ -39,6 +39,14 @@ export async function criarTarefa(formData: FormData): Promise<ActionResult> {
   }
 
   const supabase = await createClient();
+
+  if (quadro === "tasks1") {
+    const permitido = await podeCriarTasks1Atual(supabase);
+    if (!permitido) {
+      return { error: "Só administradores criam tarefas na Tasks1 no momento." };
+    }
+  }
+
   const criado_por = await getUsuarioAtual(supabase);
 
   const { error } = await supabase.from("tarefas").insert({
