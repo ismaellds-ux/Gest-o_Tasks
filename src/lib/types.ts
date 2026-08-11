@@ -1,8 +1,8 @@
 export type Quadro = "tasks1" | "tasks2";
 export type Tipo = "interna" | "externa";
 export type Periodicidade = "unica" | "diario" | "semanal" | "mensal";
-export type StatusTarefa = "pendente" | "em_aberto" | "concluida";
-export type FiltroStatus = "todas" | "em_aberto" | "pendentes" | "concluidas";
+export type StatusTarefa = "pendente" | "em_aberto" | "concluida" | "cancelada";
+export type FiltroStatus = "todas" | "em_aberto" | "pendentes" | "concluidas" | "canceladas";
 
 // Tipos de linha usam `type` (não `interface`): interfaces quebram a inferência
 // genérica profunda do postgrest-js (Row/Insert/Update colapsam para `never`).
@@ -19,6 +19,10 @@ export type Tarefa = {
   periodicidade: Periodicidade;
   concluida: boolean;
   concluido_por: string | null;
+  cancelada: boolean;
+  motivo_cancelamento: string | null;
+  cancelado_por: string | null;
+  cancelado_em: string | null;
   criado_por: string;
   criado_em: string;
 };
@@ -62,8 +66,16 @@ export type Database = {
       };
       tarefas: {
         Row: Tarefa;
-        Insert: Omit<Tarefa, "id" | "criado_em" | "concluida" | "concluido_por"> &
-          Partial<Pick<Tarefa, "id" | "criado_em" | "concluida" | "concluido_por">>;
+        Insert: Omit<
+          Tarefa,
+          "id" | "criado_em" | "concluida" | "concluido_por" | "cancelada" | "motivo_cancelamento" | "cancelado_por" | "cancelado_em"
+        > &
+          Partial<
+            Pick<
+              Tarefa,
+              "id" | "criado_em" | "concluida" | "concluido_por" | "cancelada" | "motivo_cancelamento" | "cancelado_por" | "cancelado_em"
+            >
+          >;
         Update: Partial<Tarefa>;
         Relationships: [];
       };

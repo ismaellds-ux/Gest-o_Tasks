@@ -7,15 +7,17 @@ só administradores criam contas — não existe cadastro público.
 ## 1. Criar o projeto Supabase
 
 1. Crie um projeto em [supabase.com/dashboard](https://supabase.com/dashboard).
-2. Abra **SQL Editor** e rode, nessa ordem, o conteúdo de
-   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) e depois
-   [`supabase/migrations/0002_admin.sql`](supabase/migrations/0002_admin.sql) (em
-   queries separadas). O primeiro cria as tabelas (`usuarios`, `tarefas`,
-   `adiamentos`, `conclusoes`), os enums, o trigger que sincroniza `auth.users` →
-   `usuarios`, e as políticas de RLS. O segundo adiciona a coluna `is_admin` e
-   promove o usuário `ismael.teste` a administrador — troque esse nome antes de
-   rodar se o primeiro admin for outra pessoa (ou rode o `update` manualmente depois
-   de criar o usuário pelo painel).
+2. Abra **SQL Editor** e rode, nessa ordem (uma query por vez), o conteúdo de
+   [`0001_init.sql`](supabase/migrations/0001_init.sql),
+   [`0002_admin.sql`](supabase/migrations/0002_admin.sql) e
+   [`0003_cancelamento.sql`](supabase/migrations/0003_cancelamento.sql).
+   O primeiro cria as tabelas (`usuarios`, `tarefas`, `adiamentos`, `conclusoes`), os
+   enums, o trigger que sincroniza `auth.users` → `usuarios`, e as políticas de RLS.
+   O segundo adiciona a coluna `is_admin` e promove o usuário `ismael.teste` a
+   administrador — troque esse nome antes de rodar se o primeiro admin for outra
+   pessoa (ou rode o `update` manualmente depois de criar o usuário pelo painel). O
+   terceiro adiciona as colunas de cancelamento de tarefa (`cancelada`,
+   `motivo_cancelamento`, `cancelado_por`, `cancelado_em`).
 3. Em **Authentication → Providers → Email**, desligue **Confirm email**. O login
    deste app é só usuário/senha — por baixo dos panos cada usuário vira um e-mail
    sintético (`usuario@tarefas.local`) que não existe de verdade, então a confirmação
@@ -95,11 +97,19 @@ npm run start
 - **Deploy sugerido**: Vercel (frontend + Server Actions) com o banco no Supabase.
   Configure as três variáveis de ambiente do `.env.local` (incluindo a
   `SUPABASE_SERVICE_ROLE_KEY`) no painel da Vercel como variáveis de servidor.
+- **Excluir vs. cancelar tarefa**: só admins excluem tarefas de vez (`tarefas.delete`,
+  irreversível). Usuários comuns só podem **cancelar** (`tarefas.cancelada = true`,
+  com `motivo_cancelamento` obrigatório) — a tarefa some das ações ativas mas o
+  registro e o motivo continuam visíveis no histórico/detalhe.
+- **PWA / ícone**: `src/app/icon.png`, `apple-icon.png` e os ícones em `public/` são
+  gerados a partir do logo em `scripts/gerar-icones.mjs` (recorta só o touro, sem o
+  texto "STIER", via `sharp`). Rode `node scripts/gerar-icones.mjs` de novo se o logo
+  de origem mudar (o caminho de origem está hardcoded no topo do script).
 
 ## Estrutura
 
-- `supabase/migrations/` — `0001_init.sql` (schema base) e `0002_admin.sql` (coluna
-  `is_admin` + admin inicial).
+- `supabase/migrations/` — `0001_init.sql` (schema base), `0002_admin.sql` (coluna
+  `is_admin` + admin inicial) e `0003_cancelamento.sql` (cancelamento de tarefa).
 - `src/lib/domain/` — regras de negócio puras (status calculado, agrupamento por data,
   recorrência, heurística de motivo genérico no adiamento, estatísticas).
 - `src/app/actions/` — Server Actions: `auth.ts` (login/logout), `tarefas.ts`
@@ -128,3 +138,7 @@ Depois de configurar o Supabase e criar o primeiro admin (passos 1–3):
 8. Exclua uma tarefa e confirme o modal de confirmação.
 9. De volta como admin, promova o segundo usuário a admin, depois remova, depois
    exclua a conta — confirme que some da lista e não consegue mais logar.
+10. Logado como usuário comum, abra o detalhe de uma tarefa: deve aparecer
+    **Cancelar** (não Excluir). Cancele com um motivo e confirme que o motivo aparece
+    no card e no detalhe. Logado como admin, confirme que **Excluir** continua
+    disponível e remove a tarefa de vez.

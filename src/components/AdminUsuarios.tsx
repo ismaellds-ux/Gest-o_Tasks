@@ -37,18 +37,18 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-display text-lg font-semibold text-fg">Usuários</h2>
           <p className="text-sm text-fg-secondary">Só administradores criam novas contas de acesso.</p>
         </div>
-        <Button tone="success" icon={<Plus size={16} />} onClick={() => setModal({ type: "novo" })}>
+        <Button tone="success" icon={<Plus size={16} />} onClick={() => setModal({ type: "novo" })} className="shrink-0 self-start">
           Novo usuário
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-        <table className="w-full text-sm">
+      <div className="scrollbar-thin overflow-x-auto rounded-2xl border border-border bg-surface">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-border-soft text-left">
             <tr>
               <th className="label-caps px-4 py-3 font-normal">Usuário</th>

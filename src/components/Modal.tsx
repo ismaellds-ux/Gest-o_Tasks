@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type MouseEvent, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 interface ModalProps {
@@ -11,6 +11,8 @@ interface ModalProps {
 }
 
 export function Modal({ title, onClose, children, maxWidth = "max-w-lg" }: ModalProps) {
+  const mouseDownNoBackdrop = useRef(false);
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -19,15 +21,24 @@ export function Modal({ title, onClose, children, maxWidth = "max-w-lg" }: Modal
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
+  function handleBackdropMouseDown(e: MouseEvent<HTMLDivElement>) {
+    mouseDownNoBackdrop.current = e.target === e.currentTarget;
+  }
+
+  function handleBackdropClick(e: MouseEvent<HTMLDivElement>) {
+    if (mouseDownNoBackdrop.current && e.target === e.currentTarget) {
+      onClose();
+    }
+    mouseDownNoBackdrop.current = false;
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-      onClick={onClose}
+      onMouseDown={handleBackdropMouseDown}
+      onClick={handleBackdropClick}
     >
-      <div
-        className={`scrollbar-thin max-h-[90vh] w-full ${maxWidth} overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-2xl`}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={`scrollbar-thin max-h-[90vh] w-full ${maxWidth} overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-2xl`}>
         <div className="mb-5 flex items-center justify-between">
           <h2 className="font-display text-lg font-semibold text-fg">{title}</h2>
           <button

@@ -19,6 +19,7 @@ export function StatsPanel({ stats, totalConclusoesHistorico, onAbrirConclusoes 
           <StatNumber label="Total" value={stats.total} />
           <StatNumber label="Em Aberto" value={stats.emAberto} color="var(--yellow)" />
           <StatNumber label="Pendentes" value={stats.pendentes} color="var(--amber)" />
+          {stats.canceladas > 0 && <StatNumber label="Canceladas" value={stats.canceladas} color="var(--coral)" />}
           <button type="button" onClick={onAbrirConclusoes} className="text-left transition-opacity hover:opacity-80">
             <StatNumber label="Conclusões (histórico)" value={totalConclusoesHistorico} color="var(--green)" />
           </button>

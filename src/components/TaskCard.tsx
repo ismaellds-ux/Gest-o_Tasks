@@ -56,14 +56,18 @@ export function TaskCard({ tarefa, ultimoAdiamento, onAbrirDetalhes, onConcluir,
         {tarefa.periodicidade !== "unica" && <span className="label-caps">{tarefa.periodicidade}</span>}
       </div>
 
-      {tarefa.concluido_por && (
-        <p className="mt-2 text-xs text-green">Concluída por {tarefa.concluido_por}</p>
+      {tarefa.cancelada ? (
+        <p className="mt-2 text-xs text-coral">
+          Cancelada por {tarefa.cancelado_por}: &ldquo;{tarefa.motivo_cancelamento}&rdquo;
+        </p>
+      ) : (
+        tarefa.concluido_por && <p className="mt-2 text-xs text-green">Concluída por {tarefa.concluido_por}</p>
       )}
-      {ultimoAdiamento && (
+      {ultimoAdiamento && !tarefa.cancelada && (
         <p className="mt-1 text-xs text-amber">Último adiamento: &ldquo;{ultimoAdiamento.motivo}&rdquo;</p>
       )}
 
-      {status !== "concluida" && (
+      {status !== "concluida" && status !== "cancelada" && (
         <div className="mt-3 flex flex-wrap gap-2 border-t border-border-soft pt-3">
           <Button tone="success" icon={<CheckCircle2 size={14} />} onClick={pararPropagacao(onConcluir)} className="px-2.5 py-1.5 text-xs">
             Concluir

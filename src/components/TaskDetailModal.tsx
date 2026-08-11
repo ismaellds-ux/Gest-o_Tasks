@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { CalendarClock, CheckCircle2, MapPin, Pencil, RotateCcw, Square, Trash2, User } from "lucide-react";
+import { Ban, CalendarClock, CheckCircle2, MapPin, Pencil, RotateCcw, Square, Trash2, User } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { StatusBadge, TipoBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/Button";
@@ -14,23 +14,28 @@ import type { Adiamento, Tarefa } from "@/lib/types";
 interface TaskDetailModalProps {
   tarefa: Tarefa;
   ultimoAdiamento?: Adiamento;
+  isAdmin: boolean;
   onClose: () => void;
   onEditar: () => void;
   onAdiar: () => void;
   onConcluir: () => void;
   onExcluir: () => void;
+  onCancelar: () => void;
 }
 
 export function TaskDetailModal({
   tarefa,
   ultimoAdiamento,
+  isAdmin,
   onClose,
   onEditar,
   onAdiar,
   onConcluir,
   onExcluir,
+  onCancelar,
 }: TaskDetailModalProps) {
   const status = getStatus(tarefa);
+  const ativa = status !== "concluida" && status !== "cancelada";
   const [pending, startTransition] = useTransition();
   const showToast = useToast();
 
@@ -67,7 +72,7 @@ export function TaskDetailModal({
 
         {tarefa.descricao && <p className="text-sm text-fg-secondary">{tarefa.descricao}</p>}
 
-        <div className="grid grid-cols-2 gap-3 rounded-xl border border-border-soft bg-surface-elevated p-4 text-sm">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded-xl border border-border-soft bg-surface-elevated p-4 text-sm">
           <div>
             <span className="label-caps block">Quando</span>
             <span className="text-fg">{formatDateBR(tarefa.quando)}</span>
@@ -87,13 +92,20 @@ export function TaskDetailModal({
               </span>
             </div>
           )}
-          {tarefa.concluido_por && (
+          {tarefa.concluido_por && !tarefa.cancelada && (
             <div className="col-span-2">
               <span className="label-caps block">Concluída por (última vez)</span>
               <span className="text-green">{tarefa.concluido_por}</span>
             </div>
           )}
         </div>
+
+        {tarefa.cancelada && (
+          <div className="rounded-xl border border-coral/20 bg-coral-dim/40 p-4 text-sm">
+            <span className="label-caps mb-1 block text-coral">Cancelada por {tarefa.cancelado_por}</span>
+            <p className="text-fg-secondary">&ldquo;{tarefa.motivo_cancelamento}&rdquo;</p>
+          </div>
+        )}
 
         {ultimoAdiamento && (
           <div className="rounded-xl border border-amber/20 bg-amber-dim/40 p-4 text-sm">
@@ -113,7 +125,7 @@ export function TaskDetailModal({
         )}
 
         <div className="flex flex-wrap gap-2 border-t border-border-soft pt-4">
-          {status !== "concluida" && (
+          {ativa && (
             <>
               <Button tone="success" icon={<CheckCircle2 size={15} />} onClick={onConcluir}>
                 Concluir
@@ -126,19 +138,27 @@ export function TaskDetailModal({
           <Button tone="default" icon={<Pencil size={15} />} onClick={onEditar}>
             Editar
           </Button>
-          {tarefa.periodicidade !== "unica" && !tarefa.concluida && (
+          {ativa && tarefa.periodicidade !== "unica" && (
             <Button tone="default" icon={<Square size={15} />} onClick={encerrar} disabled={pending}>
               Encerrar recorrência
             </Button>
           )}
-          {tarefa.periodicidade === "unica" && tarefa.concluida && (
+          {tarefa.periodicidade === "unica" && tarefa.concluida && !tarefa.cancelada && (
             <Button tone="default" icon={<RotateCcw size={15} />} onClick={reabrir} disabled={pending}>
               Reabrir
             </Button>
           )}
-          <Button tone="danger" icon={<Trash2 size={15} />} onClick={onExcluir} className="ml-auto">
-            Excluir
-          </Button>
+          {isAdmin ? (
+            <Button tone="danger" icon={<Trash2 size={15} />} onClick={onExcluir} className="ml-auto">
+              Excluir
+            </Button>
+          ) : (
+            ativa && (
+              <Button tone="danger" icon={<Ban size={15} />} onClick={onCancelar} className="ml-auto">
+                Cancelar
+              </Button>
+            )
+          )}
         </div>
       </div>
     </Modal>

@@ -4,6 +4,7 @@ const STATUS_CONFIG: Record<StatusTarefa, { label: string; fg: string; bg: strin
   pendente: { label: "Pendente", fg: "text-amber", bg: "bg-amber-dim" },
   em_aberto: { label: "Em Aberto", fg: "text-yellow", bg: "bg-yellow-dim" },
   concluida: { label: "Concluída", fg: "text-green", bg: "bg-green-dim" },
+  cancelada: { label: "Cancelada", fg: "text-coral", bg: "bg-coral-dim" },
 };
 
 export function StatusBadge({ status }: { status: StatusTarefa }) {

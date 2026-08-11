@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -21,8 +21,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tarefas",
+  title: "Tasks",
   description: "Sistema de gestão de tarefas",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#10151a",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

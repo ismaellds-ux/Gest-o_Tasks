@@ -6,6 +6,7 @@ const OPTIONS: { value: FiltroStatus; label: string }[] = [
   { value: "em_aberto", label: "Em Aberto" },
   { value: "pendentes", label: "Pendentes" },
   { value: "concluidas", label: "Concluídas" },
+  { value: "canceladas", label: "Canceladas" },
 ];
 
 export function FilterBar({ value, onChange }: { value: FiltroStatus; onChange: (v: FiltroStatus) => void }) {

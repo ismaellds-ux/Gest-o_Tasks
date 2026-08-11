@@ -10,6 +10,7 @@ import { TaskFormModal } from "@/components/TaskFormModal";
 import { AdiarModal } from "@/components/AdiarModal";
 import { ConcluirModal } from "@/components/ConcluirModal";
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
+import { CancelarTarefaModal } from "@/components/CancelarTarefaModal";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { ConclusoesListModal } from "@/components/ConclusoesListModal";
 import { getStatus } from "@/lib/domain/status";
@@ -25,6 +26,7 @@ interface QuadroBoardProps {
   tarefasComConclusaoIds: string[];
   conclusoes: ConclusaoComTarefa[];
   usuarioAtual: string;
+  isAdmin: boolean;
 }
 
 type ModalState =
@@ -33,6 +35,7 @@ type ModalState =
   | { type: "adiar"; tarefa: Tarefa }
   | { type: "concluir"; tarefa: Tarefa }
   | { type: "excluir"; tarefa: Tarefa }
+  | { type: "cancelar"; tarefa: Tarefa }
   | { type: "conclusoes" };
 
 export function QuadroBoard({
@@ -42,6 +45,7 @@ export function QuadroBoard({
   tarefasComConclusaoIds,
   conclusoes,
   usuarioAtual,
+  isAdmin,
 }: QuadroBoardProps) {
   const [filtro, setFiltro] = useState<FiltroStatus>("todas");
   const [modal, setModal] = useState<ModalState | null>(null);
@@ -57,6 +61,7 @@ export function QuadroBoard({
       const status = getStatus(t);
       if (filtro === "em_aberto") return status === "em_aberto";
       if (filtro === "pendentes") return status === "pendente";
+      if (filtro === "canceladas") return status === "cancelada";
       return status === "concluida";
     });
   }, [tarefas, filtro]);
@@ -69,9 +74,9 @@ export function QuadroBoard({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <FilterBar value={filtro} onChange={setFiltro} />
-        <Button tone="success" icon={<Plus size={16} />} onClick={() => setModal({ type: "form" })}>
+        <Button tone="success" icon={<Plus size={16} />} onClick={() => setModal({ type: "form" })} className="shrink-0">
           Nova tarefa
         </Button>
       </div>
@@ -116,6 +121,7 @@ export function QuadroBoard({
         <ConcluirModal tarefa={modal.tarefa} usuarioAtual={usuarioAtual} onClose={() => setModal(null)} />
       )}
       {modal?.type === "excluir" && <DeleteConfirmModal tarefa={modal.tarefa} onClose={() => setModal(null)} />}
+      {modal?.type === "cancelar" && <CancelarTarefaModal tarefa={modal.tarefa} onClose={() => setModal(null)} />}
       {modal?.type === "conclusoes" && (
         <ConclusoesListModal conclusoes={conclusoes} onClose={() => setModal(null)} />
       )}
@@ -123,11 +129,13 @@ export function QuadroBoard({
         <TaskDetailModal
           tarefa={modal.tarefa}
           ultimoAdiamento={adiamentoMap.get(modal.tarefa.id)}
+          isAdmin={isAdmin}
           onClose={() => setModal(null)}
           onEditar={() => setModal({ type: "form", tarefa: modal.tarefa })}
           onAdiar={() => setModal({ type: "adiar", tarefa: modal.tarefa })}
           onConcluir={() => setModal({ type: "concluir", tarefa: modal.tarefa })}
           onExcluir={() => setModal({ type: "excluir", tarefa: modal.tarefa })}
+          onCancelar={() => setModal({ type: "cancelar", tarefa: modal.tarefa })}
         />
       )}
     </div>

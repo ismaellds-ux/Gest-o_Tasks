@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getUsuarioAtual } from "@/lib/data/tarefas";
+import { isAdminAtual } from "@/lib/data/admin";
 import { proximaData } from "@/lib/domain/recurrence";
 import type { Periodicidade, Quadro, Tarefa, Tipo } from "@/lib/types";
 
@@ -103,8 +104,35 @@ export async function excluirTarefa(formData: FormData): Promise<ActionResult> {
   if (!id) return { error: "Tarefa inválida." };
 
   const supabase = await createClient();
+  const admin = await isAdminAtual(supabase);
+  if (!admin) return { error: "Só administradores podem excluir tarefas permanentemente." };
+
   const { error } = await supabase.from("tarefas").delete().eq("id", id);
   if (error) return { error: "Não foi possível excluir a tarefa." };
+
+  revalidarQuadros();
+  return {};
+}
+
+export async function cancelarTarefa(formData: FormData): Promise<ActionResult> {
+  const id = str(formData, "id");
+  const motivo = str(formData, "motivo");
+  if (!id) return { error: "Tarefa inválida." };
+  if (!motivo) return { error: "Informe o motivo do cancelamento." };
+
+  const supabase = await createClient();
+  const canceladoPor = await getUsuarioAtual(supabase);
+
+  const { error } = await supabase
+    .from("tarefas")
+    .update({
+      cancelada: true,
+      motivo_cancelamento: motivo,
+      cancelado_por: canceladoPor,
+      cancelado_em: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) return { error: "Não foi possível cancelar a tarefa." };
 
   revalidarQuadros();
   return {};
