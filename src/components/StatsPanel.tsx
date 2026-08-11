@@ -12,6 +12,9 @@ interface StatsPanelProps {
 export function StatsPanel({ stats, totalConclusoesHistorico, onAbrirConclusoes }: StatsPanelProps) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-5">
+      <p className="mb-4 text-xs text-fg-muted">
+        % concluído considera só tarefas únicas — recorrentes não entram nesse cálculo.
+      </p>
       <div className="flex flex-wrap items-center gap-6">
         <Carimbo pct={stats.pctConcluido} color="var(--green)" label="Concluído" />
 
