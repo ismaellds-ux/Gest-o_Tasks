@@ -73,6 +73,11 @@ export function QuadroBoard({
 
   const grupos = useMemo(() => agruparPorData(tarefasFiltradas), [tarefasFiltradas]);
 
+  const numeroInicialPorGrupo = useMemo(
+    () => grupos.map((_, i) => grupos.slice(0, i).reduce((soma, g) => soma + g.itens.length, 0)),
+    [grupos]
+  );
+
   function tarefaPorId(id: string) {
     return tarefas.find((t) => t.id === id);
   }
@@ -113,10 +118,11 @@ export function QuadroBoard({
       )}
 
       <div className="flex flex-col gap-6">
-        {grupos.map((grupo) => (
+        {grupos.map((grupo, i) => (
           <DateGroupSection
             key={grupo.key}
             grupo={grupo}
+            numeroInicial={numeroInicialPorGrupo[i]}
             ultimoAdiamentoPorTarefa={adiamentoMap}
             isAdmin={isAdmin}
             onAbrirDetalhes={(id) => {

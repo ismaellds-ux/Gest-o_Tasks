@@ -4,6 +4,7 @@ import type { Adiamento } from "@/lib/types";
 
 interface DateGroupSectionProps {
   grupo: GrupoTarefas;
+  numeroInicial: number;
   ultimoAdiamentoPorTarefa: Map<string, Adiamento>;
   isAdmin: boolean;
   onAbrirDetalhes: (id: string) => void;
@@ -16,6 +17,7 @@ interface DateGroupSectionProps {
 
 export function DateGroupSection({
   grupo,
+  numeroInicial,
   ultimoAdiamentoPorTarefa,
   isAdmin,
   onAbrirDetalhes,
@@ -37,10 +39,11 @@ export function DateGroupSection({
         <p className="pb-1 text-sm text-fg-muted">Nenhuma tarefa neste período.</p>
       ) : (
         <div className="flex flex-col gap-2.5">
-          {grupo.itens.map((tarefa) => (
+          {grupo.itens.map((tarefa, i) => (
             <TaskCard
               key={tarefa.id}
               tarefa={tarefa}
+              numero={numeroInicial + i + 1}
               ultimoAdiamento={ultimoAdiamentoPorTarefa.get(tarefa.id)}
               isAdmin={isAdmin}
               onAbrirDetalhes={() => onAbrirDetalhes(tarefa.id)}

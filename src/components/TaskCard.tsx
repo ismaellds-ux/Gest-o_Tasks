@@ -10,6 +10,7 @@ import type { Adiamento, Tarefa } from "@/lib/types";
 
 interface TaskCardProps {
   tarefa: Tarefa;
+  numero: number;
   ultimoAdiamento?: Adiamento;
   isAdmin: boolean;
   onAbrirDetalhes: () => void;
@@ -22,6 +23,7 @@ interface TaskCardProps {
 
 export function TaskCard({
   tarefa,
+  numero,
   ultimoAdiamento,
   isAdmin,
   onAbrirDetalhes,
@@ -48,7 +50,9 @@ export function TaskCard({
       style={{ borderLeft: `4px solid ${corBordaTipo(tarefa.tipo)}` }}
     >
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-display font-semibold text-fg">{tarefa.o_que}</h3>
+        <h3 className="font-display font-semibold text-fg">
+          <span className="text-fg-muted">#{numero}</span> {tarefa.o_que}
+        </h3>
         <StatusBadge status={status} />
       </div>
 
@@ -105,7 +109,12 @@ export function TaskCard({
           Cancelada por {tarefa.cancelado_por}: &ldquo;{tarefa.motivo_cancelamento}&rdquo;
         </p>
       ) : (
-        tarefa.concluido_por && <p className="mt-2 text-xs text-green">Concluída por {tarefa.concluido_por}</p>
+        tarefa.concluido_por && (
+          <p className="mt-2 text-xs text-green">
+            {status === "concluida" ? "Concluída por " : "Última conclusão por "}
+            {tarefa.concluido_por}
+          </p>
+        )
       )}
       {ultimoAdiamento && !tarefa.cancelada && (
         <p className="mt-1 text-xs text-amber">Último adiamento: &ldquo;{ultimoAdiamento.motivo}&rdquo;</p>
