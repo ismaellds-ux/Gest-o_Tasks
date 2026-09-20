@@ -4,7 +4,7 @@ import { useState } from "react";
 import { KeyRound } from "lucide-react";
 import { TrocarSenhaModal } from "@/components/TrocarSenhaModal";
 
-export function TrocarSenhaButton() {
+export function TrocarSenhaButton({ isAdmin }: { isAdmin: boolean }) {
   const [aberto, setAberto] = useState(false);
 
   return (
@@ -15,9 +15,9 @@ export function TrocarSenhaButton() {
         className="flex items-center gap-1 text-xs text-fg-muted hover:text-fg hover:underline"
       >
         <KeyRound size={12} />
-        Trocar senha
+        {isAdmin ? "Trocar senha" : "Trocar PIN"}
       </button>
-      {aberto && <TrocarSenhaModal onClose={() => setAberto(false)} />}
+      {aberto && <TrocarSenhaModal isAdmin={isAdmin} onClose={() => setAberto(false)} />}
     </>
   );
 }

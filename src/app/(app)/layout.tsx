@@ -25,7 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
               <span className="hidden text-sm text-fg-secondary sm:inline">{usuario}</span>
-              <TrocarSenhaButton />
+              <TrocarSenhaButton isAdmin={admin} />
             </div>
             <form action={sair}>
               <button

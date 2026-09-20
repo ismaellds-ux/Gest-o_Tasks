@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { emailSintetico } from "@/lib/domain/username";
+import { isAdminAtual } from "@/lib/data/admin";
+import { emailSintetico, pinValido } from "@/lib/domain/username";
 
 export interface AuthFormState {
   error?: string;
@@ -34,13 +35,18 @@ export interface ActionResult {
 
 export async function alterarMinhaSenha(formData: FormData): Promise<ActionResult> {
   const novaSenha = String(formData.get("nova_senha") ?? "");
-  if (novaSenha.length < 6) {
-    return { error: "A senha precisa ter pelo menos 6 caracteres." };
-  }
 
   const supabase = await createClient();
+  const admin = await isAdminAtual(supabase);
+
+  if (admin) {
+    if (novaSenha.length < 6) return { error: "A senha precisa ter pelo menos 6 caracteres." };
+  } else {
+    if (!pinValido(novaSenha)) return { error: "O PIN precisa ter exatamente 4 números." };
+  }
+
   const { error } = await supabase.auth.updateUser({ password: novaSenha });
-  if (error) return { error: "Não foi possível trocar a senha." };
+  if (error) return { error: `Não foi possível trocar: ${error.message}` };
 
   return {};
 }

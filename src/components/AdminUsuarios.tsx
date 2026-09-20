@@ -40,7 +40,12 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
       const result = await alternarAdmin(formData);
       setPendingId(null);
       if (result.error) return showToast(result.error, "error");
-      showToast(usuario.is_admin ? "Admin removido." : "Usuário promovido a admin.", "success");
+      showToast(
+        usuario.is_admin
+          ? "Admin removido."
+          : "Usuário promovido a admin — redefina a senha dele, o PIN de 4 dígitos ficou fraco pra esse nível.",
+        "success"
+      );
     });
   }
 
@@ -130,7 +135,7 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
                       onClick={() => setModal({ type: "senha", usuario: u })}
                       className="px-2.5 py-1.5 text-xs"
                     >
-                      Redefinir senha
+                      Redefinir {u.is_admin ? "senha" : "PIN"}
                     </Button>
                     {u.id !== usuarioAtualId && (
                       <Button
@@ -161,6 +166,7 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
 
 function NovoUsuarioModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string>();
+  const [tornarAdmin, setTornarAdmin] = useState(false);
   const [pending, startTransition] = useTransition();
   const showToast = useToast();
 
@@ -184,11 +190,25 @@ function NovoUsuarioModal({ onClose }: { onClose: () => void }) {
         <Field label="Usuário">
           <input name="usuario" required autoFocus className={inputClass} placeholder="nome.usuario" />
         </Field>
-        <Field label="Senha inicial">
-          <PasswordInput name="senha" required minLength={6} placeholder="mínimo 6 caracteres" />
+        <Field label={tornarAdmin ? "Senha inicial" : "PIN inicial"}>
+          <PasswordInput
+            name="senha"
+            required
+            inputMode={tornarAdmin ? undefined : "numeric"}
+            pattern={tornarAdmin ? undefined : "[0-9]*"}
+            maxLength={tornarAdmin ? undefined : 4}
+            minLength={tornarAdmin ? 6 : 4}
+            placeholder={tornarAdmin ? "mínimo 6 caracteres" : "4 números"}
+          />
         </Field>
         <label className="flex items-center gap-2 text-sm text-fg-secondary">
-          <input type="checkbox" name="is_admin" className="h-4 w-4 rounded border-border" />
+          <input
+            type="checkbox"
+            name="is_admin"
+            checked={tornarAdmin}
+            onChange={(e) => setTornarAdmin(e.target.checked)}
+            className="h-4 w-4 rounded border-border"
+          />
           Tornar administrador
         </label>
 
@@ -270,10 +290,23 @@ function RedefinirSenhaModal({ usuario, onClose }: { usuario: Usuario; onClose: 
   }
 
   return (
-    <Modal title={`Redefinir senha de ${usuario.usuario}`} onClose={onClose} maxWidth="max-w-sm">
+    <Modal
+      title={`Redefinir ${usuario.is_admin ? "senha" : "PIN"} de ${usuario.usuario}`}
+      onClose={onClose}
+      maxWidth="max-w-sm"
+    >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Field label="Nova senha">
-          <PasswordInput name="nova_senha" required minLength={6} autoFocus placeholder="mínimo 6 caracteres" />
+        <Field label={usuario.is_admin ? "Nova senha" : "Novo PIN"}>
+          <PasswordInput
+            name="nova_senha"
+            required
+            autoFocus
+            inputMode={usuario.is_admin ? undefined : "numeric"}
+            pattern={usuario.is_admin ? undefined : "[0-9]*"}
+            maxLength={usuario.is_admin ? undefined : 4}
+            minLength={usuario.is_admin ? 6 : 4}
+            placeholder={usuario.is_admin ? "mínimo 6 caracteres" : "4 números"}
+          />
         </Field>
 
         <FieldError message={error} />
