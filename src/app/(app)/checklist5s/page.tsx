@@ -40,16 +40,16 @@ export default async function Checklist5sPage() {
               <div className="flex flex-wrap gap-1.5">
                 {TURNOS.map((t) => {
                   const info = dia.turnos[t.value];
-                  if (info.realizado) {
-                    return (
+                  if (info.execucoes.length > 0) {
+                    return info.execucoes.map((exec) => (
                       <Link
-                        key={t.value}
-                        href={`/checklist5s/${info.execucaoId}`}
+                        key={exec.id}
+                        href={`/checklist5s/${exec.id}`}
                         className="rounded-lg bg-green-dim px-2 py-1 text-xs font-medium text-green hover:brightness-110"
                       >
-                        {t.label} ✓
+                        {t.label} ✓ {exec.realizadoPor}
                       </Link>
-                    );
+                    ));
                   }
                   return (
                     <span

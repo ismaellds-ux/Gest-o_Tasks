@@ -27,9 +27,13 @@ export function computeChecklistScore(respostas: { resposta: RespostaChecklist }
   return { ok, problema, naoAplica, pontuacao };
 }
 
+export interface CoberturaExecucao {
+  id: string;
+  realizadoPor: string;
+}
+
 export interface CoberturaTurno {
-  realizado: boolean;
-  execucaoId?: string;
+  execucoes: CoberturaExecucao[];
 }
 
 export interface CoberturaDia {
@@ -38,21 +42,28 @@ export interface CoberturaDia {
   turnos: Record<Turno, CoberturaTurno>;
 }
 
-// Painel de cobertura: pra cada dia dos últimos N, mostra se cada turno
-// (manhã/tarde/noite) registrou o checklist — assim dá pra notar rápido um
-// turno que ficou sem fazer, em vez de só ver o que já foi feito.
-export function computeCobertura(execucoes: { id: string; data: string; turno: Turno }[], dias = 7): CoberturaDia[] {
+// Painel de cobertura: pra cada dia dos últimos N, mostra quem fez o
+// checklist em cada turno (manhã/tarde/noite) — o mesmo turno pode ter mais
+// de um registro no dia (mais de uma pessoa avaliando), por isso é uma
+// lista, não um booleano. Turno sem nenhum registro aparece como "não feito".
+export function computeCobertura(
+  execucoes: { id: string; data: string; turno: Turno; realizado_por: string }[],
+  dias = 7,
+): CoberturaDia[] {
   const hoje = todayISO();
-  const idPorDiaTurno = new Map<string, string>();
-  for (const e of execucoes) idPorDiaTurno.set(`${e.data}|${e.turno}`, e.id);
+  const porDiaTurno = new Map<string, CoberturaExecucao[]>();
+  for (const e of execucoes) {
+    const chave = `${e.data}|${e.turno}`;
+    if (!porDiaTurno.has(chave)) porDiaTurno.set(chave, []);
+    porDiaTurno.get(chave)!.push({ id: e.id, realizadoPor: e.realizado_por });
+  }
 
   const resultado: CoberturaDia[] = [];
   for (let i = dias - 1; i >= 0; i--) {
     const data = addDaysISO(hoje, -i);
     const turnos = {} as Record<Turno, CoberturaTurno>;
     for (const turno of TURNOS.map((t) => t.value)) {
-      const execucaoId = idPorDiaTurno.get(`${data}|${turno}`);
-      turnos[turno] = { realizado: !!execucaoId, execucaoId };
+      turnos[turno] = { execucoes: porDiaTurno.get(`${data}|${turno}`) ?? [] };
     }
     resultado.push({ data, hoje: data === hoje, turnos });
   }
