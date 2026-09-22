@@ -14,6 +14,7 @@ export function Tabs({ isAdmin, podeVerTasks2 }: TabsProps) {
   const tabs = [
     { href: "/tasks1", label: "Tasks 1" },
     ...(podeVerTasks2 ? [{ href: "/tasks2", label: "Tasks 2" }] : []),
+    { href: "/checklist5s", label: "5S" },
     ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
   ];
 

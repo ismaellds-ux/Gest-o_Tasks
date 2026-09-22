@@ -4,6 +4,9 @@ export type Periodicidade = "unica" | "diario" | "semanal" | "mensal";
 export type StatusTarefa = "pendente" | "em_aberto" | "concluida" | "cancelada";
 export type FiltroStatus = "todas" | "em_aberto" | "pendentes" | "concluidas" | "canceladas";
 
+export type Turno = "manha" | "tarde" | "noite";
+export type RespostaChecklist = "ok" | "problema" | "nao_aplica";
+
 // Tipos de linha usam `type` (não `interface`): interfaces quebram a inferência
 // genérica profunda do postgrest-js (Row/Insert/Update colapsam para `never`).
 export type Tarefa = {
@@ -26,6 +29,7 @@ export type Tarefa = {
   cancelado_em: string | null;
   criado_por: string;
   criado_em: string;
+  origem_checklist_item_id: string | null;
 };
 
 export type Adiamento = {
@@ -79,6 +83,43 @@ export type Usuario = {
   janela_tasks1_fim: string | null;
 };
 
+export type ChecklistArea = {
+  id: string;
+  nome: string;
+  ordem: number;
+  ativo: boolean;
+  criado_em: string;
+};
+
+export type ChecklistItem = {
+  id: string;
+  area_id: string;
+  pergunta: string;
+  resposta_ok_texto: string;
+  resposta_problema_texto: string;
+  resposta_na_texto: string;
+  permite_tarefa_automatica: boolean;
+  ordem: number;
+  ativo: boolean;
+  criado_em: string;
+};
+
+export type ChecklistExecucao = {
+  id: string;
+  turno: Turno;
+  data: string;
+  realizado_por: string;
+  criado_em: string;
+};
+
+export type ChecklistResposta = {
+  id: string;
+  execucao_id: string;
+  item_id: string;
+  resposta: RespostaChecklist;
+  observacao: string | null;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -101,6 +142,7 @@ export type Database = {
           | "cancelado_por"
           | "cancelado_em"
           | "atribuido_por"
+          | "origem_checklist_item_id"
         > &
           Partial<
             Pick<
@@ -114,9 +156,45 @@ export type Database = {
               | "cancelado_por"
               | "cancelado_em"
               | "atribuido_por"
+              | "origem_checklist_item_id"
             >
           >;
         Update: Partial<Tarefa>;
+        Relationships: [];
+      };
+      checklist_areas: {
+        Row: ChecklistArea;
+        Insert: Omit<ChecklistArea, "id" | "criado_em" | "ordem" | "ativo"> &
+          Partial<Pick<ChecklistArea, "id" | "criado_em" | "ordem" | "ativo">>;
+        Update: Partial<ChecklistArea>;
+        Relationships: [];
+      };
+      checklist_itens: {
+        Row: ChecklistItem;
+        Insert: Omit<
+          ChecklistItem,
+          "id" | "criado_em" | "ordem" | "ativo" | "resposta_ok_texto" | "resposta_problema_texto" | "resposta_na_texto"
+        > &
+          Partial<
+            Pick<
+              ChecklistItem,
+              "id" | "criado_em" | "ordem" | "ativo" | "resposta_ok_texto" | "resposta_problema_texto" | "resposta_na_texto"
+            >
+          >;
+        Update: Partial<ChecklistItem>;
+        Relationships: [];
+      };
+      checklist_execucoes: {
+        Row: ChecklistExecucao;
+        Insert: Omit<ChecklistExecucao, "id" | "criado_em" | "data"> &
+          Partial<Pick<ChecklistExecucao, "id" | "criado_em" | "data">>;
+        Update: Partial<ChecklistExecucao>;
+        Relationships: [];
+      };
+      checklist_respostas: {
+        Row: ChecklistResposta;
+        Insert: Omit<ChecklistResposta, "id" | "observacao"> & Partial<Pick<ChecklistResposta, "id" | "observacao">>;
+        Update: Partial<ChecklistResposta>;
         Relationships: [];
       };
       adiamentos: {
