@@ -54,8 +54,8 @@ export function ChecklistDetalheAcoes({ execucaoId, isAdmin }: { execucaoId: str
         <Modal title="Excluir checklist" onClose={() => setConfirmando(false)} maxWidth="max-w-sm">
           <div className="flex flex-col gap-4">
             <p className="text-sm text-fg-secondary">
-              Tem certeza que quer excluir esse checklist? As respostas se perdem — as tarefas já geradas a partir
-              dele continuam existindo.
+              Tem certeza que quer excluir esse checklist? As respostas e as tarefas geradas automaticamente a
+              partir dele também são excluídas.
             </p>
             <FieldError message={error} />
             <div className="mt-1 flex justify-end gap-2">

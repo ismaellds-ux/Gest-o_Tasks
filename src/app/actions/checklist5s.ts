@@ -32,6 +32,7 @@ function extrairRespostas(formData: FormData): RespostaSubmetida[] {
 async function gerarTarefasParaProblemas(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: SupabaseClient<any>,
+  execucaoId: string,
   respostas: RespostaSubmetida[],
   realizadoPor: string,
   data: string,
@@ -69,6 +70,7 @@ async function gerarTarefasParaProblemas(
       periodicidade: "unica",
       criado_por: realizadoPor,
       origem_checklist_item_id: item.id,
+      origem_checklist_execucao_id: execucaoId,
     });
   }
 }
@@ -124,7 +126,7 @@ export async function registrarExecucao(formData: FormData): Promise<ActionResul
   );
   if (respostasError) return { error: "Não foi possível salvar as respostas." };
 
-  await gerarTarefasParaProblemas(supabase, respostas, realizadoPor, execucao.data);
+  await gerarTarefasParaProblemas(supabase, execucao.id, respostas, realizadoPor, execucao.data);
 
   revalidarChecklist();
   revalidatePath("/tasks1");
@@ -165,7 +167,7 @@ export async function editarExecucao(formData: FormData): Promise<ActionResult> 
   );
   if (respostasError) return { error: "Não foi possível salvar as respostas." };
 
-  await gerarTarefasParaProblemas(supabase, respostas, execucao.realizado_por, execucao.data);
+  await gerarTarefasParaProblemas(supabase, id, respostas, execucao.realizado_por, execucao.data);
 
   revalidarChecklist();
   revalidatePath(`/checklist5s/${id}`);
@@ -185,6 +187,7 @@ export async function excluirExecucao(formData: FormData): Promise<ActionResult>
   if (error) return { error: "Não foi possível excluir o checklist." };
 
   revalidarChecklist();
+  revalidatePath("/tasks1");
   return {};
 }
 

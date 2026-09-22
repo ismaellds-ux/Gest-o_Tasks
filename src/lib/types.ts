@@ -30,6 +30,7 @@ export type Tarefa = {
   criado_por: string;
   criado_em: string;
   origem_checklist_item_id: string | null;
+  origem_checklist_execucao_id: string | null;
 };
 
 export type Adiamento = {
@@ -143,6 +144,7 @@ export type Database = {
           | "cancelado_em"
           | "atribuido_por"
           | "origem_checklist_item_id"
+          | "origem_checklist_execucao_id"
         > &
           Partial<
             Pick<
@@ -157,6 +159,7 @@ export type Database = {
               | "cancelado_em"
               | "atribuido_por"
               | "origem_checklist_item_id"
+              | "origem_checklist_execucao_id"
             >
           >;
         Update: Partial<Tarefa>;
