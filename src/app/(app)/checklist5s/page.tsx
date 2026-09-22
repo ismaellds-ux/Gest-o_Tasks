@@ -2,13 +2,14 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listarExecucoes } from "@/lib/data/checklist5s";
-import { computeChecklistScore, labelTurno } from "@/lib/domain/checklist5s";
+import { computeChecklistScore, computeCobertura, labelTurno, TURNOS } from "@/lib/domain/checklist5s";
 import { formatDateBR } from "@/lib/domain/date";
 import { Button } from "@/components/Button";
 
 export default async function Checklist5sPage() {
   const supabase = await createClient();
   const execucoes = await listarExecucoes(supabase);
+  const cobertura = computeCobertura(execucoes, 7);
 
   return (
     <div className="flex flex-col gap-6">
@@ -22,6 +23,49 @@ export default async function Checklist5sPage() {
             Novo fechamento
           </Button>
         </Link>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-surface p-4">
+        <h2 className="font-display mb-3 text-base font-semibold text-fg">Cobertura dos últimos 7 dias</h2>
+        <div className="flex flex-col gap-2">
+          {cobertura.map((dia) => (
+            <div
+              key={dia.data}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border-soft bg-surface-elevated px-3 py-2"
+            >
+              <span className="text-sm text-fg-secondary">
+                {formatDateBR(dia.data)}
+                {dia.hoje && " (hoje)"}
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {TURNOS.map((t) => {
+                  const info = dia.turnos[t.value];
+                  if (info.realizado) {
+                    return (
+                      <Link
+                        key={t.value}
+                        href={`/checklist5s/${info.execucaoId}`}
+                        className="rounded-lg bg-green-dim px-2 py-1 text-xs font-medium text-green hover:brightness-110"
+                      >
+                        {t.label} ✓
+                      </Link>
+                    );
+                  }
+                  return (
+                    <span
+                      key={t.value}
+                      className={`rounded-lg px-2 py-1 text-xs font-medium ${
+                        dia.hoje ? "bg-surface-light text-fg-muted" : "bg-coral-dim text-coral"
+                      }`}
+                    >
+                      {t.label}: não feito
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {execucoes.length === 0 ? (
