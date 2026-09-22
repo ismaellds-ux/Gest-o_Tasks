@@ -2,13 +2,15 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listarExecucoes } from "@/lib/data/checklist5s";
+import { isAdminAtual } from "@/lib/data/admin";
 import { computeChecklistScore, computeCobertura, labelTurno, TURNOS } from "@/lib/domain/checklist5s";
 import { formatDateBR } from "@/lib/domain/date";
 import { Button } from "@/components/Button";
+import { ChecklistDetalheAcoes } from "@/components/checklist5s/ChecklistDetalheAcoes";
 
 export default async function Checklist5sPage() {
   const supabase = await createClient();
-  const execucoes = await listarExecucoes(supabase);
+  const [execucoes, isAdmin] = await Promise.all([listarExecucoes(supabase), isAdminAtual(supabase)]);
   const cobertura = computeCobertura(execucoes, 7);
 
   return (
@@ -75,38 +77,40 @@ export default async function Checklist5sPage() {
           {execucoes.map((exec) => {
             const score = computeChecklistScore(exec.respostas);
             return (
-              <Link
+              <div
                 key={exec.id}
-                href={`/checklist5s/${exec.id}`}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4 hover:border-border-soft"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4 hover:border-border-soft"
               >
-                <div>
-                  <p className="font-display font-semibold text-fg">
-                    {labelTurno(exec.turno)} — {formatDateBR(exec.data)}
-                  </p>
-                  <p className="text-sm text-fg-muted">Por {exec.realizado_por}</p>
-                </div>
-                <div className="text-right">
-                  <p
-                    className={`text-lg font-semibold ${
-                      score.pontuacao === null
-                        ? "text-fg-muted"
-                        : score.pontuacao >= 80
-                          ? "text-green"
-                          : score.pontuacao >= 50
-                            ? "text-amber"
-                            : "text-coral"
-                    }`}
-                  >
-                    {score.pontuacao === null ? "—" : `${score.pontuacao}%`}
-                  </p>
-                  {score.problema > 0 && (
-                    <p className="text-xs text-coral">
-                      {score.problema} pendência{score.problema === 1 ? "" : "s"}
+                <Link href={`/checklist5s/${exec.id}`} className="flex flex-1 items-center justify-between gap-3">
+                  <div>
+                    <p className="font-display font-semibold text-fg">
+                      {labelTurno(exec.turno)} — {formatDateBR(exec.data)}
                     </p>
-                  )}
-                </div>
-              </Link>
+                    <p className="text-sm text-fg-muted">Por {exec.realizado_por}</p>
+                  </div>
+                  <div className="text-right">
+                    <p
+                      className={`text-lg font-semibold ${
+                        score.pontuacao === null
+                          ? "text-fg-muted"
+                          : score.pontuacao >= 80
+                            ? "text-green"
+                            : score.pontuacao >= 50
+                              ? "text-amber"
+                              : "text-coral"
+                      }`}
+                    >
+                      {score.pontuacao === null ? "—" : `${score.pontuacao}%`}
+                    </p>
+                    {score.problema > 0 && (
+                      <p className="text-xs text-coral">
+                        {score.problema} pendência{score.problema === 1 ? "" : "s"}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+                <ChecklistDetalheAcoes execucaoId={exec.id} isAdmin={isAdmin} />
+              </div>
             );
           })}
         </div>
