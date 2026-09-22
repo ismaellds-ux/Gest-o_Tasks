@@ -7,7 +7,7 @@ import { Field, FieldError, inputClass } from "@/components/Field";
 import { ChipGroup } from "@/components/ChipGroup";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
-import { registrarExecucao } from "@/app/actions/checklist5s";
+import { registrarExecucao, editarExecucao } from "@/app/actions/checklist5s";
 import { TURNOS } from "@/lib/domain/checklist5s";
 import type { RespostaChecklist, Turno } from "@/lib/types";
 import type { AreaComItens } from "@/lib/data/checklist5s";
@@ -18,10 +18,31 @@ const RESPOSTA_COR: Record<RespostaChecklist, string> = {
   nao_aplica: "border-border-soft bg-surface-light text-fg-secondary",
 };
 
-export function ChecklistForm({ areas }: { areas: AreaComItens[] }) {
-  const [turno, setTurno] = useState<Turno>("manha");
-  const [respostas, setRespostas] = useState<Record<string, RespostaChecklist>>({});
-  const [observacoes, setObservacoes] = useState<Record<string, string>>({});
+interface ExecucaoExistente {
+  id: string;
+  turno: Turno;
+  respostasPorItem: Record<string, { resposta: RespostaChecklist; observacao: string | null }>;
+}
+
+interface ChecklistFormProps {
+  areas: AreaComItens[];
+  execucaoExistente?: ExecucaoExistente;
+}
+
+export function ChecklistForm({ areas, execucaoExistente }: ChecklistFormProps) {
+  const [turno, setTurno] = useState<Turno>(execucaoExistente?.turno ?? "manha");
+  const [respostas, setRespostas] = useState<Record<string, RespostaChecklist>>(() =>
+    Object.fromEntries(
+      Object.entries(execucaoExistente?.respostasPorItem ?? {}).map(([itemId, v]) => [itemId, v.resposta]),
+    ),
+  );
+  const [observacoes, setObservacoes] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      Object.entries(execucaoExistente?.respostasPorItem ?? {})
+        .filter(([, v]) => v.observacao)
+        .map(([itemId, v]) => [itemId, v.observacao as string]),
+    ),
+  );
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
   const showToast = useToast();
@@ -39,19 +60,20 @@ export function ChecklistForm({ areas }: { areas: AreaComItens[] }) {
 
     const formData = new FormData();
     formData.set("turno", turno);
+    if (execucaoExistente) formData.set("id", execucaoExistente.id);
     for (const [itemId, resposta] of Object.entries(respostas)) {
       formData.set(`resposta:${itemId}`, resposta);
       if (observacoes[itemId]) formData.set(`observacao:${itemId}`, observacoes[itemId]);
     }
 
     startTransition(async () => {
-      const result = await registrarExecucao(formData);
+      const result = execucaoExistente ? await editarExecucao(formData) : await registrarExecucao(formData);
       if (result.error) {
         setError(result.error);
         return;
       }
-      showToast("Checklist registrado!", "success");
-      router.push("/checklist5s");
+      showToast(execucaoExistente ? "Checklist atualizado!" : "Checklist registrado!", "success");
+      router.push(execucaoExistente ? `/checklist5s/${execucaoExistente.id}` : "/checklist5s");
     });
   }
 
@@ -114,7 +136,7 @@ export function ChecklistForm({ areas }: { areas: AreaComItens[] }) {
           {respondidos} de {totalItens} respondidos
         </span>
         <Button type="submit" tone="success" icon={<Save size={16} />} disabled={pending}>
-          {pending ? "Salvando..." : "Salvar checklist"}
+          {pending ? "Salvando..." : execucaoExistente ? "Salvar alterações" : "Salvar checklist"}
         </Button>
       </div>
     </form>

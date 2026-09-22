@@ -1,12 +1,77 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUsuarioAtual } from "@/lib/data/tarefas";
 import { isAdminAtual } from "@/lib/data/admin";
 import { USUARIO_TODOS } from "@/lib/domain/permissoes";
 import type { ChecklistItem, RespostaChecklist, Turno } from "@/lib/types";
+
+interface RespostaSubmetida {
+  itemId: string;
+  resposta: RespostaChecklist;
+  observacao: string | null;
+}
+
+function extrairRespostas(formData: FormData): RespostaSubmetida[] {
+  const respostas: RespostaSubmetida[] = [];
+  for (const [key, value] of formData.entries()) {
+    const match = key.match(/^resposta:(.+)$/);
+    if (!match) continue;
+    const itemId = match[1];
+    const resposta = String(value) as RespostaChecklist;
+    if (!["ok", "problema", "nao_aplica"].includes(resposta)) continue;
+    const observacao = str(formData, `observacao:${itemId}`) || null;
+    respostas.push({ itemId, resposta, observacao });
+  }
+  return respostas;
+}
+
+async function gerarTarefasParaProblemas(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: SupabaseClient<any>,
+  respostas: RespostaSubmetida[],
+  realizadoPor: string,
+  data: string,
+) {
+  const idsComProblema = respostas.filter((r) => r.resposta === "problema").map((r) => r.itemId);
+  if (idsComProblema.length === 0) return;
+
+  const { data: itens } = await supabase.from("checklist_itens").select("*").in("id", idsComProblema);
+
+  for (const item of (itens ?? []) as ChecklistItem[]) {
+    if (!item.permite_tarefa_automatica) continue;
+
+    const { data: tarefaAberta } = await supabase
+      .from("tarefas")
+      .select("id")
+      .eq("origem_checklist_item_id", item.id)
+      .eq("concluida", false)
+      .eq("cancelada", false)
+      .limit(1)
+      .maybeSingle();
+
+    if (tarefaAberta) continue;
+
+    const observacaoDoItem = respostas.find((r) => r.itemId === item.id)?.observacao ?? null;
+
+    await supabase.from("tarefas").insert({
+      quadro: "tasks1",
+      tipo: "interna",
+      o_que: `5S: ${item.pergunta}`,
+      descricao: observacaoDoItem,
+      quando: data,
+      quem: USUARIO_TODOS,
+      local: null,
+      cidade: null,
+      periodicidade: "unica",
+      criado_por: realizadoPor,
+      origem_checklist_item_id: item.id,
+    });
+  }
+}
 
 export interface ActionResult {
   error?: string;
@@ -34,17 +99,7 @@ export async function registrarExecucao(formData: FormData): Promise<ActionResul
     return { error: "Selecione o turno." };
   }
 
-  const respostas: { itemId: string; resposta: RespostaChecklist; observacao: string | null }[] = [];
-  for (const [key, value] of formData.entries()) {
-    const match = key.match(/^resposta:(.+)$/);
-    if (!match) continue;
-    const itemId = match[1];
-    const resposta = String(value) as RespostaChecklist;
-    if (!["ok", "problema", "nao_aplica"].includes(resposta)) continue;
-    const observacao = str(formData, `observacao:${itemId}`) || null;
-    respostas.push({ itemId, resposta, observacao });
-  }
-
+  const respostas = extrairRespostas(formData);
   if (respostas.length === 0) {
     return { error: "Responda pelo menos um item." };
   }
@@ -69,47 +124,67 @@ export async function registrarExecucao(formData: FormData): Promise<ActionResul
   );
   if (respostasError) return { error: "Não foi possível salvar as respostas." };
 
-  const idsComProblema = respostas.filter((r) => r.resposta === "problema").map((r) => r.itemId);
-  if (idsComProblema.length > 0) {
-    const { data: itens } = await supabase
-      .from("checklist_itens")
-      .select("*")
-      .in("id", idsComProblema);
-
-    for (const item of (itens ?? []) as ChecklistItem[]) {
-      if (!item.permite_tarefa_automatica) continue;
-
-      const { data: tarefaAberta } = await supabase
-        .from("tarefas")
-        .select("id")
-        .eq("origem_checklist_item_id", item.id)
-        .eq("concluida", false)
-        .eq("cancelada", false)
-        .limit(1)
-        .maybeSingle();
-
-      if (tarefaAberta) continue;
-
-      const observacaoDoItem = respostas.find((r) => r.itemId === item.id)?.observacao ?? null;
-
-      await supabase.from("tarefas").insert({
-        quadro: "tasks1",
-        tipo: "interna",
-        o_que: `5S: ${item.pergunta}`,
-        descricao: observacaoDoItem,
-        quando: execucao.data,
-        quem: USUARIO_TODOS,
-        local: null,
-        cidade: null,
-        periodicidade: "unica",
-        criado_por: realizadoPor,
-        origem_checklist_item_id: item.id,
-      });
-    }
-  }
+  await gerarTarefasParaProblemas(supabase, respostas, realizadoPor, execucao.data);
 
   revalidarChecklist();
   revalidatePath("/tasks1");
+  return {};
+}
+
+export async function editarExecucao(formData: FormData): Promise<ActionResult> {
+  const id = str(formData, "id");
+  const turno = str(formData, "turno") as Turno;
+  if (!id) return { error: "Checklist inválido." };
+  if (!["manha", "tarde", "noite"].includes(turno)) {
+    return { error: "Selecione o turno." };
+  }
+
+  const respostas = extrairRespostas(formData);
+  if (respostas.length === 0) {
+    return { error: "Responda pelo menos um item." };
+  }
+
+  const supabase = await createClient();
+
+  const { data: execucao, error: execucaoError } = await supabase
+    .from("checklist_execucoes")
+    .update({ turno })
+    .eq("id", id)
+    .select()
+    .single();
+  if (execucaoError || !execucao) return { error: "Não foi possível salvar o checklist." };
+
+  const { error: respostasError } = await supabase.from("checklist_respostas").upsert(
+    respostas.map((r) => ({
+      execucao_id: id,
+      item_id: r.itemId,
+      resposta: r.resposta,
+      observacao: r.observacao,
+    })),
+    { onConflict: "execucao_id,item_id" },
+  );
+  if (respostasError) return { error: "Não foi possível salvar as respostas." };
+
+  await gerarTarefasParaProblemas(supabase, respostas, execucao.realizado_por, execucao.data);
+
+  revalidarChecklist();
+  revalidatePath(`/checklist5s/${id}`);
+  revalidatePath("/tasks1");
+  return {};
+}
+
+export async function excluirExecucao(formData: FormData): Promise<ActionResult> {
+  const acesso = await exigirAdmin();
+  if (acesso.error) return { error: acesso.error };
+
+  const id = str(formData, "id");
+  if (!id) return { error: "Checklist inválido." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("checklist_execucoes").delete().eq("id", id);
+  if (error) return { error: "Não foi possível excluir o checklist." };
+
+  revalidarChecklist();
   return {};
 }
 

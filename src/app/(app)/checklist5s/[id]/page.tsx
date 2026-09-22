@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getExecucaoDetalhe } from "@/lib/data/checklist5s";
+import { isAdminAtual } from "@/lib/data/admin";
 import { computeChecklistScore, labelTurno } from "@/lib/domain/checklist5s";
 import { formatDateBR } from "@/lib/domain/date";
+import { ChecklistDetalheAcoes } from "@/components/checklist5s/ChecklistDetalheAcoes";
 import type { RespostaComItem } from "@/lib/data/checklist5s";
 
 const RESPOSTA_BADGE: Record<string, string> = {
@@ -21,7 +23,7 @@ function textoResposta(r: RespostaComItem): string {
 export default async function ChecklistDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const detalhe = await getExecucaoDetalhe(supabase, id);
+  const [detalhe, isAdmin] = await Promise.all([getExecucaoDetalhe(supabase, id), isAdminAtual(supabase)]);
   if (!detalhe) notFound();
 
   const score = computeChecklistScore(detalhe.respostas);
@@ -35,15 +37,18 @@ export default async function ChecklistDetalhePage({ params }: { params: Promise
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-xl font-semibold text-fg">
-          {labelTurno(detalhe.execucao.turno)} — {formatDateBR(detalhe.execucao.data)}
-        </h1>
-        <p className="text-sm text-fg-secondary">
-          Por {detalhe.execucao.realizado_por}
-          {score.pontuacao !== null && ` · ${score.pontuacao}% ok`}
-          {score.problema > 0 && ` · ${score.problema} pendência${score.problema === 1 ? "" : "s"}`}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-xl font-semibold text-fg">
+            {labelTurno(detalhe.execucao.turno)} — {formatDateBR(detalhe.execucao.data)}
+          </h1>
+          <p className="text-sm text-fg-secondary">
+            Por {detalhe.execucao.realizado_por}
+            {score.pontuacao !== null && ` · ${score.pontuacao}% ok`}
+            {score.problema > 0 && ` · ${score.problema} pendência${score.problema === 1 ? "" : "s"}`}
+          </p>
+        </div>
+        <ChecklistDetalheAcoes execucaoId={detalhe.execucao.id} isAdmin={isAdmin} />
       </div>
 
       {[...porArea.entries()].map(([areaNome, respostas]) => (
