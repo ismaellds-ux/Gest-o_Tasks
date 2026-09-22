@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminAtual } from "@/lib/data/admin";
-import { emailSintetico, pinValido, usuarioValido } from "@/lib/domain/username";
+import { emailSintetico, usuarioValido } from "@/lib/domain/username";
 
 export interface ActionResult {
   error?: string;
@@ -38,10 +38,8 @@ export async function criarUsuario(formData: FormData): Promise<ActionResult> {
   if (!usuarioValido(usuario)) {
     return { error: "Escolha um usuário com pelo menos 3 caracteres." };
   }
-  if (tornarAdmin) {
-    if (senha.length < 6) return { error: "A senha precisa ter pelo menos 6 caracteres." };
-  } else {
-    if (!pinValido(senha)) return { error: "O PIN precisa ter exatamente 4 números." };
+  if (senha.length < 6) {
+    return { error: "A senha precisa ter pelo menos 6 caracteres." };
   }
 
   const adminClient = createAdminClient();
@@ -168,19 +166,11 @@ export async function redefinirSenha(formData: FormData): Promise<ActionResult> 
   const id = str(formData, "id");
   const novaSenha = str(formData, "nova_senha");
   if (!id) return { error: "Usuário inválido." };
+  if (novaSenha.length < 6) return { error: "A senha precisa ter pelo menos 6 caracteres." };
 
   const adminClient = createAdminClient();
-  const { data: alvo } = await adminClient.from("usuarios").select("is_admin").eq("id", id).single();
-  const alvoAdmin = alvo?.is_admin ?? false;
-
-  if (alvoAdmin) {
-    if (novaSenha.length < 6) return { error: "A senha precisa ter pelo menos 6 caracteres." };
-  } else {
-    if (!pinValido(novaSenha)) return { error: "O PIN precisa ter exatamente 4 números." };
-  }
-
   const { error } = await adminClient.auth.admin.updateUserById(id, { password: novaSenha });
-  if (error) return { error: `Não foi possível redefinir: ${error.message}` };
+  if (error) return { error: `Não foi possível redefinir a senha: ${error.message}` };
 
   return {};
 }

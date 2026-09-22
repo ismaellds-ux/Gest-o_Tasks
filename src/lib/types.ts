@@ -79,11 +79,6 @@ export type Usuario = {
   janela_tasks1_fim: string | null;
 };
 
-export type UsuarioLogin = {
-  usuario: string;
-  is_admin: boolean;
-};
-
 export type Database = {
   public: {
     Tables: {
@@ -145,12 +140,7 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: {
-      usuarios_login: {
-        Row: UsuarioLogin;
-        Relationships: [];
-      };
-    };
+    Views: Record<string, never>;
     Functions: Record<string, never>;
   };
 };

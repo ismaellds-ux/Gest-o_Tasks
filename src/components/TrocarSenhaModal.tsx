@@ -9,7 +9,7 @@ import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { alterarMinhaSenha } from "@/app/actions/auth";
 
-export function TrocarSenhaModal({ isAdmin, onClose }: { isAdmin: boolean; onClose: () => void }) {
+export function TrocarSenhaModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
   const showToast = useToast();
@@ -23,28 +23,19 @@ export function TrocarSenhaModal({ isAdmin, onClose }: { isAdmin: boolean; onClo
         setError(result.error);
         return;
       }
-      showToast(isAdmin ? "Senha alterada!" : "PIN alterado!", "success");
+      showToast("Senha alterada!", "success");
       onClose();
     });
   }
 
   return (
-    <Modal title={isAdmin ? "Trocar minha senha" : "Trocar meu PIN"} onClose={onClose} maxWidth="max-w-sm">
+    <Modal title="Trocar minha senha" onClose={onClose} maxWidth="max-w-sm">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <p className="text-sm text-fg-secondary">
-          Só você vai saber {isAdmin ? "essa senha nova" : "esse PIN novo"} — nem o administrador tem acesso a ele.
+          Só você vai saber essa senha nova — nem o administrador tem acesso a ela.
         </p>
-        <Field label={isAdmin ? "Nova senha" : "Novo PIN"}>
-          <PasswordInput
-            name="nova_senha"
-            required
-            autoFocus
-            inputMode={isAdmin ? undefined : "numeric"}
-            pattern={isAdmin ? undefined : "[0-9]*"}
-            maxLength={isAdmin ? undefined : 4}
-            minLength={isAdmin ? 6 : 4}
-            placeholder={isAdmin ? "mínimo 6 caracteres" : "4 números"}
-          />
+        <Field label="Nova senha">
+          <PasswordInput name="nova_senha" required minLength={6} autoFocus placeholder="mínimo 6 caracteres" />
         </Field>
 
         <FieldError message={error} />
@@ -54,7 +45,7 @@ export function TrocarSenhaModal({ isAdmin, onClose }: { isAdmin: boolean; onClo
             Cancelar
           </Button>
           <Button type="submit" tone="success" icon={<KeyRound size={16} />} disabled={pending}>
-            {pending ? "Salvando..." : isAdmin ? "Trocar senha" : "Trocar PIN"}
+            {pending ? "Salvando..." : "Trocar senha"}
           </Button>
         </div>
       </form>
