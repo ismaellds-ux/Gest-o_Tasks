@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getExecucaoDetalhe } from "@/lib/data/checklist5s";
 import { isAdminAtual } from "@/lib/data/admin";
-import { computeChecklistScore, labelTurno } from "@/lib/domain/checklist5s";
+import { computeChecklistScore, labelMomento, labelTurno } from "@/lib/domain/checklist5s";
 import { formatDateBR } from "@/lib/domain/date";
 import { ChecklistDetalheAcoes } from "@/components/checklist5s/ChecklistDetalheAcoes";
 import type { RespostaComItem } from "@/lib/data/checklist5s";
@@ -40,7 +40,8 @@ export default async function ChecklistDetalhePage({ params }: { params: Promise
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-xl font-semibold text-fg">
-            {labelTurno(detalhe.execucao.turno)} — {formatDateBR(detalhe.execucao.data)}
+            {labelTurno(detalhe.execucao.turno)} · {labelMomento(detalhe.execucao.momento)} —{" "}
+            {formatDateBR(detalhe.execucao.data)}
           </h1>
           <p className="text-sm text-fg-secondary">
             Por {detalhe.execucao.realizado_por}

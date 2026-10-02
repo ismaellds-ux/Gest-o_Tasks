@@ -8,9 +8,10 @@ import { ChipGroup } from "@/components/ChipGroup";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { registrarExecucao, editarExecucao } from "@/app/actions/checklist5s";
-import { TURNOS } from "@/lib/domain/checklist5s";
-import type { RespostaChecklist, Turno } from "@/lib/types";
-import type { AreaComItens } from "@/lib/data/checklist5s";
+import { MOMENTOS, TURNO_OPTIONS } from "@/lib/domain/checklist5s";
+import { formatDateBR } from "@/lib/domain/date";
+import type { Momento, RespostaChecklist, Turno } from "@/lib/types";
+import type { AreaComItens, PendenciaChecklist } from "@/lib/data/checklist5s";
 
 const RESPOSTA_COR: Record<RespostaChecklist, string> = {
   ok: "border-green/40 bg-green-dim text-green",
@@ -21,16 +22,27 @@ const RESPOSTA_COR: Record<RespostaChecklist, string> = {
 interface ExecucaoExistente {
   id: string;
   turno: Turno;
+  momento: Momento;
   respostasPorItem: Record<string, { resposta: RespostaChecklist; observacao: string | null }>;
 }
 
 interface ChecklistFormProps {
   areas: AreaComItens[];
   execucaoExistente?: ExecucaoExistente;
+  turnoSugerido?: Turno;
+  momentoSugerido?: Momento;
+  pendencias?: PendenciaChecklist[];
 }
 
-export function ChecklistForm({ areas, execucaoExistente }: ChecklistFormProps) {
-  const [turno, setTurno] = useState<Turno>(execucaoExistente?.turno ?? "manha");
+export function ChecklistForm({
+  areas,
+  execucaoExistente,
+  turnoSugerido = "turno1",
+  momentoSugerido = "recebimento",
+  pendencias = [],
+}: ChecklistFormProps) {
+  const [turno, setTurno] = useState<Turno>(execucaoExistente?.turno ?? turnoSugerido);
+  const [momento, setMomento] = useState<Momento>(execucaoExistente?.momento ?? momentoSugerido);
   const [respostas, setRespostas] = useState<Record<string, RespostaChecklist>>(() =>
     Object.fromEntries(
       Object.entries(execucaoExistente?.respostasPorItem ?? {}).map(([itemId, v]) => [itemId, v.resposta]),
@@ -60,6 +72,7 @@ export function ChecklistForm({ areas, execucaoExistente }: ChecklistFormProps) 
 
     const formData = new FormData();
     formData.set("turno", turno);
+    formData.set("momento", momento);
     if (execucaoExistente) formData.set("id", execucaoExistente.id);
     for (const [itemId, resposta] of Object.entries(respostas)) {
       formData.set(`resposta:${itemId}`, resposta);
@@ -79,11 +92,35 @@ export function ChecklistForm({ areas, execucaoExistente }: ChecklistFormProps) 
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <div className="rounded-2xl border border-border bg-surface p-4">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4">
         <Field label="Turno">
-          <ChipGroup options={TURNOS} value={turno} onChange={setTurno} />
+          <ChipGroup options={TURNO_OPTIONS} value={turno} onChange={setTurno} />
         </Field>
+        <Field label="Momento">
+          <ChipGroup options={MOMENTOS} value={momento} onChange={setMomento} />
+        </Field>
+        <p className="text-xs text-fg-muted">
+          {momento === "recebimento"
+            ? "Confira o que o turno anterior deixou antes de começar."
+            : "Confira tudo antes de passar pro próximo turno."}
+        </p>
       </div>
+
+      {pendencias.length > 0 && (
+        <div className="rounded-2xl border border-amber/30 bg-amber-dim/30 p-4">
+          <h2 className="font-display mb-2 text-base font-semibold text-amber">
+            Pendências abertas ({pendencias.length})
+          </h2>
+          <ul className="flex flex-col gap-1.5 text-sm text-fg-secondary">
+            {pendencias.map((p) => (
+              <li key={p.id}>
+                <span className="text-fg">{p.o_que}</span>
+                <span className="text-fg-muted"> · desde {formatDateBR(p.quando)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {areas.map((area) => (
         <div key={area.id} className="rounded-2xl border border-border bg-surface p-4">

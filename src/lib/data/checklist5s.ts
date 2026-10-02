@@ -1,6 +1,23 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ChecklistArea, ChecklistExecucao, ChecklistItem, ChecklistResposta } from "@/lib/types";
+import type { ChecklistArea, ChecklistExecucao, ChecklistItem, ChecklistResposta, Tarefa } from "@/lib/types";
+
+export type PendenciaChecklist = Pick<Tarefa, "id" | "o_que" | "descricao" | "quando" | "criado_por">;
+
+// Tarefas geradas automaticamente por item de checklist que ainda não foram
+// resolvidas — é o que "ficou pendente" de um turno pro outro.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function listarPendenciasChecklist(supabase: SupabaseClient<any>): Promise<PendenciaChecklist[]> {
+  const { data } = await supabase
+    .from("tarefas")
+    .select("id, o_que, descricao, quando, criado_por")
+    .not("origem_checklist_item_id", "is", null)
+    .eq("concluida", false)
+    .eq("cancelada", false)
+    .order("quando", { ascending: true });
+
+  return (data ?? []) as PendenciaChecklist[];
+}
 
 export type AreaComItens = ChecklistArea & { itens: ChecklistItem[] };
 

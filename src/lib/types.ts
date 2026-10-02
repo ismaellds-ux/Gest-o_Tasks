@@ -4,7 +4,8 @@ export type Periodicidade = "unica" | "diario" | "semanal" | "mensal";
 export type StatusTarefa = "pendente" | "em_aberto" | "concluida" | "cancelada";
 export type FiltroStatus = "todas" | "em_aberto" | "pendentes" | "concluidas" | "canceladas";
 
-export type Turno = "manha" | "tarde" | "noite";
+export type Turno = "turno1" | "turno2" | "turno3";
+export type Momento = "recebimento" | "entrega";
 export type RespostaChecklist = "ok" | "problema" | "nao_aplica";
 
 // Tipos de linha usam `type` (não `interface`): interfaces quebram a inferência
@@ -108,6 +109,7 @@ export type ChecklistItem = {
 export type ChecklistExecucao = {
   id: string;
   turno: Turno;
+  momento: Momento;
   data: string;
   realizado_por: string;
   criado_em: string;

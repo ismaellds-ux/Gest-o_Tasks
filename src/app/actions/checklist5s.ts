@@ -7,7 +7,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getUsuarioAtual } from "@/lib/data/tarefas";
 import { isAdminAtual } from "@/lib/data/admin";
 import { USUARIO_TODOS } from "@/lib/domain/permissoes";
-import type { ChecklistItem, RespostaChecklist, Turno } from "@/lib/types";
+import { agoraSaoPaulo, dataDoTurno, labelTurno } from "@/lib/domain/checklist5s";
+import type { ChecklistItem, Momento, RespostaChecklist, Turno } from "@/lib/types";
+
+const TURNOS_VALIDOS: Turno[] = ["turno1", "turno2", "turno3"];
+const MOMENTOS_VALIDOS: Momento[] = ["recebimento", "entrega"];
 
 interface RespostaSubmetida {
   itemId: string;
@@ -36,6 +40,7 @@ async function gerarTarefasParaProblemas(
   respostas: RespostaSubmetida[],
   realizadoPor: string,
   data: string,
+  contexto: { turno: Turno; momento: Momento },
 ) {
   const idsComProblema = respostas.filter((r) => r.resposta === "problema").map((r) => r.itemId);
   if (idsComProblema.length === 0) return;
@@ -57,12 +62,17 @@ async function gerarTarefasParaProblemas(
     if (tarefaAberta) continue;
 
     const observacaoDoItem = respostas.find((r) => r.itemId === item.id)?.observacao ?? null;
+    const origem =
+      contexto.momento === "recebimento"
+        ? `Encontrado ao receber o ${labelTurno(contexto.turno)} — deixado pelo turno anterior.`
+        : `Registrado na entrega do ${labelTurno(contexto.turno)}.`;
+    const descricao = [observacaoDoItem, origem].filter(Boolean).join(" — ");
 
     await supabase.from("tarefas").insert({
       quadro: "tasks1",
       tipo: "interna",
       o_que: `5S: ${item.pergunta}`,
-      descricao: observacaoDoItem,
+      descricao,
       quando: data,
       quem: USUARIO_TODOS,
       local: null,
@@ -97,8 +107,12 @@ function revalidarChecklist() {
 
 export async function registrarExecucao(formData: FormData): Promise<ActionResult> {
   const turno = str(formData, "turno") as Turno;
-  if (!["manha", "tarde", "noite"].includes(turno)) {
+  const momento = str(formData, "momento") as Momento;
+  if (!TURNOS_VALIDOS.includes(turno)) {
     return { error: "Selecione o turno." };
+  }
+  if (!MOMENTOS_VALIDOS.includes(momento)) {
+    return { error: "Selecione se é recebimento ou entrega." };
   }
 
   const respostas = extrairRespostas(formData);
@@ -111,7 +125,7 @@ export async function registrarExecucao(formData: FormData): Promise<ActionResul
 
   const { data: execucao, error: execucaoError } = await supabase
     .from("checklist_execucoes")
-    .insert({ turno, realizado_por: realizadoPor })
+    .insert({ turno, momento, data: dataDoTurno(turno, agoraSaoPaulo()), realizado_por: realizadoPor })
     .select()
     .single();
   if (execucaoError || !execucao) return { error: "Não foi possível registrar o checklist." };
@@ -126,7 +140,7 @@ export async function registrarExecucao(formData: FormData): Promise<ActionResul
   );
   if (respostasError) return { error: "Não foi possível salvar as respostas." };
 
-  await gerarTarefasParaProblemas(supabase, execucao.id, respostas, realizadoPor, execucao.data);
+  await gerarTarefasParaProblemas(supabase, execucao.id, respostas, realizadoPor, execucao.data, { turno, momento });
 
   revalidarChecklist();
   revalidatePath("/tasks1");
@@ -136,9 +150,13 @@ export async function registrarExecucao(formData: FormData): Promise<ActionResul
 export async function editarExecucao(formData: FormData): Promise<ActionResult> {
   const id = str(formData, "id");
   const turno = str(formData, "turno") as Turno;
+  const momento = str(formData, "momento") as Momento;
   if (!id) return { error: "Checklist inválido." };
-  if (!["manha", "tarde", "noite"].includes(turno)) {
+  if (!TURNOS_VALIDOS.includes(turno)) {
     return { error: "Selecione o turno." };
+  }
+  if (!MOMENTOS_VALIDOS.includes(momento)) {
+    return { error: "Selecione se é recebimento ou entrega." };
   }
 
   const respostas = extrairRespostas(formData);
@@ -150,7 +168,7 @@ export async function editarExecucao(formData: FormData): Promise<ActionResult> 
 
   const { data: execucao, error: execucaoError } = await supabase
     .from("checklist_execucoes")
-    .update({ turno })
+    .update({ turno, momento })
     .eq("id", id)
     .select()
     .single();
@@ -167,7 +185,7 @@ export async function editarExecucao(formData: FormData): Promise<ActionResult> 
   );
   if (respostasError) return { error: "Não foi possível salvar as respostas." };
 
-  await gerarTarefasParaProblemas(supabase, id, respostas, execucao.realizado_por, execucao.data);
+  await gerarTarefasParaProblemas(supabase, id, respostas, execucao.realizado_por, execucao.data, { turno, momento });
 
   revalidarChecklist();
   revalidatePath(`/checklist5s/${id}`);

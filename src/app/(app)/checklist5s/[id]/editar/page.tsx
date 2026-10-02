@@ -21,7 +21,12 @@ export default async function EditarChecklistPage({ params }: { params: Promise<
       </div>
       <ChecklistForm
         areas={areas}
-        execucaoExistente={{ id: detalhe.execucao.id, turno: detalhe.execucao.turno, respostasPorItem }}
+        execucaoExistente={{
+          id: detalhe.execucao.id,
+          turno: detalhe.execucao.turno,
+          momento: detalhe.execucao.momento,
+          respostasPorItem,
+        }}
       />
     </div>
   );
