@@ -43,7 +43,7 @@ export function ConclusoesListModal({ conclusoes, isAdmin, onClose }: Conclusoes
           {conclusoes.map((c) => (
             <li key={c.id} className="rounded-xl border border-border-soft bg-surface-elevated p-4">
               <div className="flex items-start justify-between gap-3">
-                <span className="font-display font-semibold text-fg">{c.tarefas?.o_que ?? "Tarefa"}</span>
+                <span className="font-display font-semibold uppercase text-fg">{c.tarefas?.o_que ?? "Tarefa"}</span>
                 <div className="flex shrink-0 items-center gap-2">
                   <span className="label-caps text-green">{c.concluido_por}</span>
                   {isAdmin && (

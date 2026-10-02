@@ -73,7 +73,7 @@ export function TaskFormModal({ quadro, tarefa, usuarios, todosUsuarios, isAdmin
         </Field>
 
         <Field label="O que">
-          <input name="o_que" required defaultValue={tarefa?.o_que} className={inputClass} placeholder="Título da tarefa" />
+          <input name="o_que" required defaultValue={tarefa?.o_que} className={`${inputClass} uppercase`} placeholder="Título da tarefa" />
         </Field>
 
         <Field label="Descrição">
@@ -81,7 +81,7 @@ export function TaskFormModal({ quadro, tarefa, usuarios, todosUsuarios, isAdmin
             name="descricao"
             defaultValue={tarefa?.descricao ?? ""}
             rows={3}
-            className={inputClass}
+            className={`${inputClass} uppercase`}
             placeholder="Detalhes opcionais"
           />
         </Field>

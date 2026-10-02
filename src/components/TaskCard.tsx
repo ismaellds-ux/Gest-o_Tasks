@@ -50,7 +50,7 @@ export function TaskCard({
       style={{ borderLeft: `4px solid ${corBordaTipo(tarefa.tipo)}` }}
     >
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-display font-semibold text-fg">
+        <h3 className="font-display font-semibold uppercase text-fg">
           <span className="text-fg-muted">#{numero}</span> {tarefa.o_que}
         </h3>
         <StatusBadge status={status} />
@@ -59,7 +59,7 @@ export function TaskCard({
       {tarefa.descricao && (
         <div className="mt-2">
           <span className="label-caps block">Descritivo da demanda</span>
-          <p className="mt-0.5 line-clamp-2 text-sm text-fg-secondary">{tarefa.descricao}</p>
+          <p className="mt-0.5 line-clamp-2 text-sm uppercase text-fg-secondary">{tarefa.descricao}</p>
         </div>
       )}
 

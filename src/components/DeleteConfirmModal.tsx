@@ -33,7 +33,7 @@ export function DeleteConfirmModal({ tarefa, onClose }: { tarefa: Tarefa; onClos
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input type="hidden" name="id" value={tarefa.id} />
         <p className="text-sm text-fg-secondary">
-          Tem certeza que quer excluir <span className="font-semibold text-fg">&ldquo;{tarefa.o_que}&rdquo;</span>?
+          Tem certeza que quer excluir <span className="font-semibold uppercase text-fg">&ldquo;{tarefa.o_que}&rdquo;</span>?
           Essa ação não pode ser desfeita e vai apagar todo o histórico de adiamentos e conclusões dela.
         </p>
 

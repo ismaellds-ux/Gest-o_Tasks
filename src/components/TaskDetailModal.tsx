@@ -64,7 +64,7 @@ export function TaskDetailModal({
   }
 
   return (
-    <Modal title={tarefa.o_que} onClose={onClose} maxWidth="max-w-xl">
+    <Modal title={tarefa.o_que.toUpperCase()} onClose={onClose} maxWidth="max-w-xl">
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={status} />
@@ -74,7 +74,7 @@ export function TaskDetailModal({
         {tarefa.descricao && (
           <div>
             <span className="label-caps block">Descritivo da demanda</span>
-            <p className="mt-0.5 text-sm text-fg-secondary">{tarefa.descricao}</p>
+            <p className="mt-0.5 text-sm uppercase text-fg-secondary">{tarefa.descricao}</p>
           </div>
         )}
 
