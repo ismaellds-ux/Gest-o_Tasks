@@ -53,7 +53,7 @@ export default async function ChecklistDetalhePage({ params }: { params: Promise
 
       {[...porArea.entries()].map(([areaNome, respostas]) => (
         <div key={areaNome} className="rounded-2xl border border-border bg-surface p-4">
-          <h2 className="font-display mb-3 text-base font-semibold text-fg">{areaNome}</h2>
+          <h2 className="font-display mb-3 text-base font-semibold text-yellow">{areaNome}</h2>
           <div className="flex flex-col gap-3">
             {respostas.map((r) => (
               <div key={r.id} className="border-t border-border-soft pt-3 first:border-0 first:pt-0">

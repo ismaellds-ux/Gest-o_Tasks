@@ -87,7 +87,7 @@ export function ChecklistForm({ areas, execucaoExistente }: ChecklistFormProps) 
 
       {areas.map((area) => (
         <div key={area.id} className="rounded-2xl border border-border bg-surface p-4">
-          <h2 className="font-display mb-3 text-base font-semibold text-fg">{area.nome}</h2>
+          <h2 className="font-display mb-3 text-base font-semibold text-yellow">{area.nome}</h2>
           <div className="flex flex-col gap-4">
             {area.itens.map((item) => (
               <div key={item.id} className="border-t border-border-soft pt-4 first:border-0 first:pt-0">

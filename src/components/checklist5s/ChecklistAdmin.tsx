@@ -76,7 +76,7 @@ export function ChecklistAdmin({ areas }: { areas: AreaComItens[] }) {
           <div key={area.id} className="rounded-2xl border border-border bg-surface p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <h3 className="font-display font-semibold text-fg">{area.nome}</h3>
+                <h3 className="font-display font-semibold text-yellow">{area.nome}</h3>
                 {!area.ativo && (
                   <span className="inline-flex items-center rounded-lg bg-surface-light px-2 py-0.5 text-xs text-fg-muted">
                     Inativa
