@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Save } from "lucide-react";
+import { AlertTriangle, Save } from "lucide-react";
 import { Field, FieldError, inputClass } from "@/components/Field";
 import { ChipGroup } from "@/components/ChipGroup";
 import { Button } from "@/components/Button";
@@ -153,12 +153,19 @@ export function ChecklistForm({
                   })}
                 </div>
                 {respostas[item.id] === "problema" && (
-                  <input
-                    className={`${inputClass} mt-2`}
-                    placeholder="Observação (opcional)"
-                    value={observacoes[item.id] ?? ""}
-                    onChange={(e) => setObservacoes((o) => ({ ...o, [item.id]: e.target.value }))}
-                  />
+                  <>
+                    <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-coral">
+                      <AlertTriangle size={13} />
+                      Existe pendência
+                      {item.permite_tarefa_automatica && " — será criada uma tarefa na Tasks 1"}
+                    </p>
+                    <input
+                      className={`${inputClass} mt-2`}
+                      placeholder="Observação (opcional)"
+                      value={observacoes[item.id] ?? ""}
+                      onChange={(e) => setObservacoes((o) => ({ ...o, [item.id]: e.target.value }))}
+                    />
+                  </>
                 )}
               </div>
             ))}
