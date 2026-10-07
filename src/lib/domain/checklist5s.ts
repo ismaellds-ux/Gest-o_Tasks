@@ -131,9 +131,14 @@ export function computeCobertura(
     porSlot.get(chave)!.push({ id: e.id, realizadoPor: e.realizado_por });
   }
 
+  // Dias antes do primeiro checklist registrado não entram: o sistema ainda
+  // não estava em uso, então não faz sentido marcar "não feito".
+  const primeiraData = execucoes.reduce((menor, e) => (e.data < menor ? e.data : menor), agora.data);
+
   const resultado: CoberturaDia[] = [];
   for (let i = dias - 1; i >= 0; i--) {
     const data = addDaysISO(agora.data, -i);
+    if (data < primeiraData) continue;
     const turnos = {} as Record<Turno, Record<Momento, CoberturaSlot>>;
     for (const { value: turno } of TURNOS) {
       const slots = {} as Record<Momento, CoberturaSlot>;
