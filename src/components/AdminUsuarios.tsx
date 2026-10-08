@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
-import { CalendarClock, KeyRound, Pencil, Plus, ShieldCheck, ShieldOff, Trash2, UserPlus } from "lucide-react";
+import { CalendarClock, KeyRound, ListChecks, Pencil, Plus, ShieldCheck, ShieldOff, Trash2, UserPlus } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { Field, FieldError, inputClass } from "@/components/Field";
 import { PasswordInput } from "@/components/PasswordInput";
@@ -12,6 +12,7 @@ import {
   editarUsuario,
   excluirUsuario,
   alternarAdmin,
+  alternarAcessoTasks2,
   redefinirSenha,
   definirJanelaTasks1,
 } from "@/app/actions/admin";
@@ -30,6 +31,19 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const showToast = useToast();
+
+  function toggleAcessoTasks2(usuario: Usuario) {
+    const formData = new FormData();
+    formData.set("id", usuario.id);
+    formData.set("acesso_tasks2", String(!usuario.acesso_tasks2));
+    setPendingId(usuario.id);
+    startTransition(async () => {
+      const result = await alternarAcessoTasks2(formData);
+      setPendingId(null);
+      if (result.error) return showToast(result.error, "error");
+      showToast(usuario.acesso_tasks2 ? "Acesso à Tasks 2 removido." : "Acesso à Tasks 2 liberado.", "success");
+    });
+  }
 
   function toggleAdmin(usuario: Usuario) {
     const formData = new FormData();
@@ -64,6 +78,7 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
               <th className="label-caps px-4 py-3 font-normal">Criado em</th>
               <th className="label-caps px-4 py-3 font-normal">Nível</th>
               <th className="label-caps px-4 py-3 font-normal">Cria na Tasks1</th>
+              <th className="label-caps px-4 py-3 font-normal">Tasks 2</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -91,8 +106,22 @@ export function AdminUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
                       ? `${formatDateBR(u.janela_tasks1_inicio)} – ${formatDateBR(u.janela_tasks1_fim)}`
                       : "Só admin"}
                 </td>
+                <td className="px-4 py-3 text-fg-secondary">
+                  {u.is_admin ? "Sempre" : u.acesso_tasks2 ? "Liberado" : "Sem acesso"}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
+                    {!u.is_admin && (
+                      <Button
+                        tone="ghost"
+                        icon={<ListChecks size={13} />}
+                        onClick={() => toggleAcessoTasks2(u)}
+                        disabled={pendingId === u.id}
+                        className="px-2.5 py-1.5 text-xs"
+                      >
+                        {u.acesso_tasks2 ? "Remover Tasks 2" : "Liberar Tasks 2"}
+                      </Button>
+                    )}
                     {!u.is_admin && (
                       <Button
                         tone="ghost"

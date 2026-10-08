@@ -1,15 +1,19 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getQuadroData, getUsuarioAtual } from "@/lib/data/tarefas";
-import { isAdminAtual, listarUsuarios } from "@/lib/data/admin";
+import { acessoTasks2LiberadoAtual, isAdminAtual, listarUsuarios } from "@/lib/data/admin";
 import { podeAcessarTasks2 } from "@/lib/domain/permissoes";
 import { QuadroBoard } from "@/components/QuadroBoard";
 
 export default async function Tasks2Page() {
   const supabase = await createClient();
-  const [usuarioAtual, isAdmin] = await Promise.all([getUsuarioAtual(supabase), isAdminAtual(supabase)]);
+  const [usuarioAtual, isAdmin, acessoLiberado] = await Promise.all([
+    getUsuarioAtual(supabase),
+    isAdminAtual(supabase),
+    acessoTasks2LiberadoAtual(supabase),
+  ]);
 
-  if (!podeAcessarTasks2(usuarioAtual, isAdmin)) {
+  if (!podeAcessarTasks2(isAdmin, acessoLiberado)) {
     redirect("/tasks1");
   }
 

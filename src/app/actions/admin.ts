@@ -132,6 +132,23 @@ export async function alternarAdmin(formData: FormData): Promise<ActionResult> {
   return {};
 }
 
+export async function alternarAcessoTasks2(formData: FormData): Promise<ActionResult> {
+  const acesso = await exigirAdmin();
+  if (acesso.error) return { error: acesso.error };
+
+  const id = str(formData, "id");
+  const liberado = str(formData, "acesso_tasks2") === "true";
+  if (!id) return { error: "Usuário inválido." };
+
+  const adminClient = createAdminClient();
+  const { error } = await adminClient.from("usuarios").update({ acesso_tasks2: liberado }).eq("id", id);
+  if (error) return { error: `Não foi possível atualizar o acesso: ${error.message}` };
+
+  revalidatePath("/admin");
+  revalidatePath("/tasks2");
+  return {};
+}
+
 export async function definirJanelaTasks1(formData: FormData): Promise<ActionResult> {
   const acesso = await exigirAdmin();
   if (acesso.error) return { error: acesso.error };

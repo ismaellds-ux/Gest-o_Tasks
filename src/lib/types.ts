@@ -83,6 +83,7 @@ export type Usuario = {
   criado_em: string;
   janela_tasks1_inicio: string | null;
   janela_tasks1_fim: string | null;
+  acesso_tasks2: boolean;
 };
 
 export type ChecklistArea = {

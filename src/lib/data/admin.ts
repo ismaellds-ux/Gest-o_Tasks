@@ -13,6 +13,16 @@ export async function isAdminAtual(supabase: SupabaseClient<Database>): Promise<
   return data?.is_admin ?? false;
 }
 
+export async function acessoTasks2LiberadoAtual(supabase: SupabaseClient<Database>): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data } = await supabase.from("usuarios").select("acesso_tasks2").eq("id", user.id).single();
+  return data?.acesso_tasks2 ?? false;
+}
+
 export async function podeCriarTasks1Atual(supabase: SupabaseClient<Database>): Promise<boolean> {
   const {
     data: { user },

@@ -8,8 +8,9 @@ export const RESPONSAVEL_TASKS2 = "Felipe";
 // pessoa logada vê tarefas com esse valor contando como seu no "minhas tarefas".
 export const USUARIO_TODOS = "Todos";
 
-export function podeAcessarTasks2(usuario: string, isAdmin: boolean): boolean {
-  return isAdmin || usuario === RESPONSAVEL_TASKS2;
+// Admin sempre entra; os demais só se o admin tiver liberado (usuarios.acesso_tasks2).
+export function podeAcessarTasks2(isAdmin: boolean, acessoLiberado: boolean): boolean {
+  return isAdmin || acessoLiberado;
 }
 
 // Por padrão só admin cria tarefas na Tasks1. Um usuário comum ganha essa
