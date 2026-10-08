@@ -1,11 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
 import { getQuadroData, getUsuarioAtual } from "@/lib/data/tarefas";
-import { isAdminAtual, listarUsuarios } from "@/lib/data/admin";
-import { podeCriarTasks1 } from "@/lib/domain/permissoes";
+import { redirect } from "next/navigation";
+import { acessoTasks1LiberadoAtual, acessoTasks2LiberadoAtual, isAdminAtual, listarUsuarios } from "@/lib/data/admin";
+import { podeAcessarTasks1, podeAcessarTasks2, podeCriarTasks1 } from "@/lib/domain/permissoes";
 import { QuadroBoard } from "@/components/QuadroBoard";
 
 export default async function Tasks1Page() {
   const supabase = await createClient();
+
+  const [admin, acesso1, acesso2] = await Promise.all([
+    isAdminAtual(supabase),
+    acessoTasks1LiberadoAtual(supabase),
+    acessoTasks2LiberadoAtual(supabase),
+  ]);
+  if (!podeAcessarTasks1(admin, acesso1)) {
+    redirect(podeAcessarTasks2(admin, acesso2) ? "/tasks2" : "/checklist5s");
+  }
+
   const [{ tarefas, ultimoAdiamentoPorTarefa, conclusoes }, usuarioAtual, isAdmin, usuarios] = await Promise.all([
     getQuadroData(supabase, "tasks1"),
     getUsuarioAtual(supabase),

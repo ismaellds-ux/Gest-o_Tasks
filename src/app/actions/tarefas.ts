@@ -3,8 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getUsuarioAtual } from "@/lib/data/tarefas";
-import { acessoTasks2LiberadoAtual, isAdminAtual, podeCriarTasks1Atual } from "@/lib/data/admin";
-import { podeAcessarTasks2 } from "@/lib/domain/permissoes";
+import {
+  acessoTasks1LiberadoAtual,
+  acessoTasks2LiberadoAtual,
+  isAdminAtual,
+  podeCriarTasks1Atual,
+} from "@/lib/data/admin";
+import { podeAcessarTasks1, podeAcessarTasks2 } from "@/lib/domain/permissoes";
 import { proximaData } from "@/lib/domain/recurrence";
 import type { CampoAlterado, Mudancas, Periodicidade, Quadro, Tarefa, Tipo } from "@/lib/types";
 
@@ -42,6 +47,10 @@ export async function criarTarefa(formData: FormData): Promise<ActionResult> {
   const supabase = await createClient();
 
   if (quadro === "tasks1") {
+    const [admin, liberado] = await Promise.all([isAdminAtual(supabase), acessoTasks1LiberadoAtual(supabase)]);
+    if (!podeAcessarTasks1(admin, liberado)) {
+      return { error: "Você não tem acesso à Tasks 1." };
+    }
     const permitido = await podeCriarTasks1Atual(supabase);
     if (!permitido) {
       return { error: "Só administradores criam tarefas na Tasks1 no momento." };

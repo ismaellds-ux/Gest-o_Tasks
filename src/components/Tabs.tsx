@@ -5,14 +5,15 @@ import { usePathname } from "next/navigation";
 
 interface TabsProps {
   isAdmin: boolean;
+  podeVerTasks1: boolean;
   podeVerTasks2: boolean;
 }
 
-export function Tabs({ isAdmin, podeVerTasks2 }: TabsProps) {
+export function Tabs({ isAdmin, podeVerTasks1, podeVerTasks2 }: TabsProps) {
   const pathname = usePathname();
 
   const tabs = [
-    { href: "/tasks1", label: "Tasks 1" },
+    ...(podeVerTasks1 ? [{ href: "/tasks1", label: "Tasks 1" }] : []),
     ...(podeVerTasks2 ? [{ href: "/tasks2", label: "Tasks 2" }] : []),
     { href: "/checklist5s", label: "Checklist 5S" },
     ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),

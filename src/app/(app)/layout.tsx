@@ -5,15 +5,16 @@ import { ToastProvider } from "@/components/Toast";
 import { TrocarSenhaButton } from "@/components/TrocarSenhaButton";
 import { createClient } from "@/lib/supabase/server";
 import { contarMinhasTarefas, getUsuarioAtual } from "@/lib/data/tarefas";
-import { acessoTasks2LiberadoAtual, isAdminAtual } from "@/lib/data/admin";
-import { podeAcessarTasks2 } from "@/lib/domain/permissoes";
+import { acessoTasks1LiberadoAtual, acessoTasks2LiberadoAtual, isAdminAtual } from "@/lib/data/admin";
+import { podeAcessarTasks1, podeAcessarTasks2 } from "@/lib/domain/permissoes";
 import { sair } from "@/app/actions/auth";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const [usuario, admin, acessoTasks2] = await Promise.all([
+  const [usuario, admin, acessoTasks1, acessoTasks2] = await Promise.all([
     getUsuarioAtual(supabase),
     isAdminAtual(supabase),
+    acessoTasks1LiberadoAtual(supabase),
     acessoTasks2LiberadoAtual(supabase),
   ]);
   const minhasTarefas = await contarMinhasTarefas(supabase, usuario);
@@ -24,7 +25,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <div className="flex flex-wrap items-center gap-4">
             <Logo />
-            <Tabs isAdmin={admin} podeVerTasks2={podeAcessarTasks2(admin, acessoTasks2)} />
+            <Tabs
+              isAdmin={admin}
+              podeVerTasks1={podeAcessarTasks1(admin, acessoTasks1)}
+              podeVerTasks2={podeAcessarTasks2(admin, acessoTasks2)}
+            />
           </div>
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
