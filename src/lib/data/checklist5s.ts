@@ -4,10 +4,14 @@ import type { ChecklistArea, ChecklistExecucao, ChecklistItem, ChecklistResposta
 
 export const CHAVE_LINK_FORMULARIO = "checklist_forms_url";
 
+// Usado enquanto o admin não cadastrar outro link em Admin > Checklist 5S.
+const LINK_FORMULARIO_PADRAO =
+  "https://docs.google.com/forms/d/e/1FAIpQLSc6JaqH4Gbs-MSEDDU16Aa4n-3Rv0Oxs7_mg4kjx5QVu6MJyw/viewform?usp=publish-editor";
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getLinkFormulario(supabase: SupabaseClient<any>): Promise<string> {
   const { data } = await supabase.from("configuracoes").select("valor").eq("chave", CHAVE_LINK_FORMULARIO).maybeSingle();
-  return (data?.valor as string | undefined) ?? "";
+  return (data?.valor as string | undefined) || LINK_FORMULARIO_PADRAO;
 }
 
 export type PendenciaChecklist = Pick<Tarefa, "id" | "o_que" | "descricao" | "quando" | "criado_por">;
