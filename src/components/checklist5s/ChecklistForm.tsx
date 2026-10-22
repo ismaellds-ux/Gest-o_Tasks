@@ -114,7 +114,7 @@ export function ChecklistForm({
             className="flex items-center gap-1.5 self-start text-sm font-medium text-violet hover:underline"
           >
             <ExternalLink size={14} />
-            Abrir formulário (nova aba)
+            Forms Câmara Fria
           </a>
         )}
       </div>

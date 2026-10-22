@@ -36,7 +36,7 @@ export default async function Checklist5sPage() {
           {linkFormulario && (
             <a href={linkFormulario} target="_blank" rel="noopener noreferrer">
               <Button tone="default" icon={<ExternalLink size={16} />}>
-                Abrir formulário
+                Forms Câmara Fria
               </Button>
             </a>
           )}
