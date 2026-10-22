@@ -308,6 +308,7 @@ export async function criarItem(formData: FormData): Promise<ActionResult> {
   const respostaProblemaTexto = str(formData, "resposta_problema_texto") || "Não";
   const respostaNaTexto = str(formData, "resposta_na_texto") || "Não se aplica";
   const permiteTarefaAutomatica = formData.get("permite_tarefa_automatica") === "on";
+  const exibeLinkFormulario = formData.get("exibe_link_formulario") === "on";
 
   if (!areaId || !pergunta) return { error: "Preencha a área e a pergunta." };
 
@@ -319,6 +320,7 @@ export async function criarItem(formData: FormData): Promise<ActionResult> {
     resposta_problema_texto: respostaProblemaTexto,
     resposta_na_texto: respostaNaTexto,
     permite_tarefa_automatica: permiteTarefaAutomatica,
+    exibe_link_formulario: exibeLinkFormulario,
   });
   if (error) return { error: "Não foi possível criar o item." };
 
@@ -336,6 +338,7 @@ export async function editarItem(formData: FormData): Promise<ActionResult> {
   const respostaProblemaTexto = str(formData, "resposta_problema_texto") || "Não";
   const respostaNaTexto = str(formData, "resposta_na_texto") || "Não se aplica";
   const permiteTarefaAutomatica = formData.get("permite_tarefa_automatica") === "on";
+  const exibeLinkFormulario = formData.get("exibe_link_formulario") === "on";
 
   if (!id || !pergunta) return { error: "Preencha a pergunta." };
 
@@ -348,6 +351,7 @@ export async function editarItem(formData: FormData): Promise<ActionResult> {
       resposta_problema_texto: respostaProblemaTexto,
       resposta_na_texto: respostaNaTexto,
       permite_tarefa_automatica: permiteTarefaAutomatica,
+      exibe_link_formulario: exibeLinkFormulario,
     })
     .eq("id", id);
   if (error) return { error: "Não foi possível salvar o item." };

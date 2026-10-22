@@ -142,6 +142,17 @@ export function ChecklistForm({
             {area.itens.map((item) => (
               <div key={item.id} className="border-t border-border-soft pt-4 first:border-0 first:pt-0">
                 <p className="mb-2 text-sm text-fg">{item.pergunta}</p>
+                {item.exibe_link_formulario && linkFormulario && (
+                  <a
+                    href={linkFormulario}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-2 inline-flex items-center gap-1.5 rounded-lg border border-violet/40 bg-violet-dim px-3 py-1.5 text-sm font-medium text-violet hover:brightness-110"
+                  >
+                    <ExternalLink size={14} />
+                    Forms Câmara Fria
+                  </a>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {(
                     [

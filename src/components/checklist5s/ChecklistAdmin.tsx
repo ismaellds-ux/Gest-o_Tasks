@@ -339,6 +339,15 @@ function ItemModal({ item, areaId, onClose }: { item?: ChecklistItem; areaId?: s
           />
           Gerar tarefa automática quando marcado como problema
         </label>
+        <label className="flex items-center gap-2 text-sm text-fg-secondary">
+          <input
+            type="checkbox"
+            name="exibe_link_formulario"
+            defaultChecked={item?.exibe_link_formulario ?? false}
+            className="h-4 w-4 rounded border-border"
+          />
+          Mostrar o botão Forms Câmara Fria nesta pergunta
+        </label>
 
         <FieldError message={error} />
 

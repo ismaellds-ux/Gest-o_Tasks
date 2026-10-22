@@ -103,6 +103,7 @@ export type ChecklistItem = {
   resposta_problema_texto: string;
   resposta_na_texto: string;
   permite_tarefa_automatica: boolean;
+  exibe_link_formulario: boolean;
   ordem: number;
   ativo: boolean;
   criado_em: string;
@@ -185,12 +186,26 @@ export type Database = {
         Row: ChecklistItem;
         Insert: Omit<
           ChecklistItem,
-          "id" | "criado_em" | "ordem" | "ativo" | "resposta_ok_texto" | "resposta_problema_texto" | "resposta_na_texto"
+          | "id"
+          | "criado_em"
+          | "ordem"
+          | "ativo"
+          | "resposta_ok_texto"
+          | "resposta_problema_texto"
+          | "resposta_na_texto"
+          | "exibe_link_formulario"
         > &
           Partial<
             Pick<
               ChecklistItem,
-              "id" | "criado_em" | "ordem" | "ativo" | "resposta_ok_texto" | "resposta_problema_texto" | "resposta_na_texto"
+              | "id"
+              | "criado_em"
+              | "ordem"
+              | "ativo"
+              | "resposta_ok_texto"
+              | "resposta_problema_texto"
+              | "resposta_na_texto"
+              | "exibe_link_formulario"
             >
           >;
         Update: Partial<ChecklistItem>;
