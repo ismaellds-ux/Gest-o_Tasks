@@ -15,6 +15,7 @@ import {
   editarItem,
   alternarItemAtivo,
   excluirItem,
+  salvarLinkFormulario,
 } from "@/app/actions/checklist5s";
 import type { AreaComItens } from "@/lib/data/checklist5s";
 import type { ChecklistArea, ChecklistItem } from "@/lib/types";
@@ -27,7 +28,47 @@ type ModalState =
   | { type: "editar_item"; item: ChecklistItem }
   | { type: "excluir_item"; item: ChecklistItem };
 
-export function ChecklistAdmin({ areas }: { areas: AreaComItens[] }) {
+function LinkFormularioCard({ linkAtual }: { linkAtual: string }) {
+  const [error, setError] = useState<string>();
+  const [pending, startTransition] = useTransition();
+  const showToast = useToast();
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    startTransition(async () => {
+      const result = await salvarLinkFormulario(formData);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setError(undefined);
+      showToast("Link do formulário salvo!", "success");
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
+      <Field label="Link do Google Forms (aparece como botão no Checklist 5S)">
+        <input
+          name="link"
+          type="url"
+          defaultValue={linkAtual}
+          className={inputClass}
+          placeholder="https://forms.gle/... (deixe vazio para remover)"
+        />
+      </Field>
+      <FieldError message={error} />
+      <div className="flex justify-end">
+        <Button type="submit" tone="success" disabled={pending}>
+          {pending ? "Salvando..." : "Salvar link"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+export function ChecklistAdmin({ areas, linkFormulario }: { areas: AreaComItens[]; linkFormulario: string }) {
   const [modal, setModal] = useState<ModalState | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -70,6 +111,8 @@ export function ChecklistAdmin({ areas }: { areas: AreaComItens[] }) {
           Nova área
         </Button>
       </div>
+
+      <LinkFormularioCard linkAtual={linkFormulario} />
 
       <div className="flex flex-col gap-4">
         {areas.map((area) => (

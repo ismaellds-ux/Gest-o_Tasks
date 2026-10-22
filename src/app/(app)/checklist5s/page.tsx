@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { ExternalLink, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { listarExecucoes, listarPendenciasChecklist } from "@/lib/data/checklist5s";
+import { getLinkFormulario, listarExecucoes, listarPendenciasChecklist } from "@/lib/data/checklist5s";
 import { isAdminAtual } from "@/lib/data/admin";
 import {
   computeChecklistScore,
@@ -17,10 +17,11 @@ import { ChecklistDetalheAcoes } from "@/components/checklist5s/ChecklistDetalhe
 
 export default async function Checklist5sPage() {
   const supabase = await createClient();
-  const [execucoes, pendencias, isAdmin] = await Promise.all([
+  const [execucoes, pendencias, isAdmin, linkFormulario] = await Promise.all([
     listarExecucoes(supabase),
     listarPendenciasChecklist(supabase),
     isAdminAtual(supabase),
+    getLinkFormulario(supabase),
   ]);
   const cobertura = computeCobertura(execucoes, 7);
 
@@ -31,11 +32,20 @@ export default async function Checklist5sPage() {
           <h1 className="font-display text-xl font-semibold text-fg">Checklist 5S</h1>
           <p className="text-sm text-fg-secondary">Recebimento e entrega de cada turno.</p>
         </div>
-        <Link href="/checklist5s/novo">
-          <Button tone="success" icon={<Plus size={16} />}>
-            Novo checklist
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          {linkFormulario && (
+            <a href={linkFormulario} target="_blank" rel="noopener noreferrer">
+              <Button tone="default" icon={<ExternalLink size={16} />}>
+                Abrir formulário
+              </Button>
+            </a>
+          )}
+          <Link href="/checklist5s/novo">
+            <Button tone="success" icon={<Plus size={16} />}>
+              Novo checklist
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-surface p-4">

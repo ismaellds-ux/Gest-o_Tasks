@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Save } from "lucide-react";
+import { AlertTriangle, ExternalLink, Save } from "lucide-react";
 import { Field, FieldError, inputClass } from "@/components/Field";
 import { ChipGroup } from "@/components/ChipGroup";
 import { Button } from "@/components/Button";
@@ -32,6 +32,7 @@ interface ChecklistFormProps {
   turnoSugerido?: Turno;
   momentoSugerido?: Momento;
   pendencias?: PendenciaChecklist[];
+  linkFormulario?: string;
 }
 
 export function ChecklistForm({
@@ -40,6 +41,7 @@ export function ChecklistForm({
   turnoSugerido = "turno1",
   momentoSugerido = "recebimento",
   pendencias = [],
+  linkFormulario = "",
 }: ChecklistFormProps) {
   const [turno, setTurno] = useState<Turno>(execucaoExistente?.turno ?? turnoSugerido);
   const [momento, setMomento] = useState<Momento>(execucaoExistente?.momento ?? momentoSugerido);
@@ -104,6 +106,17 @@ export function ChecklistForm({
             ? "Confira o que o turno anterior deixou antes de começar."
             : "Confira tudo antes de passar pro próximo turno."}
         </p>
+        {linkFormulario && (
+          <a
+            href={linkFormulario}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 self-start text-sm font-medium text-violet hover:underline"
+          >
+            <ExternalLink size={14} />
+            Abrir formulário (nova aba)
+          </a>
+        )}
       </div>
 
       {pendencias.length > 0 && (

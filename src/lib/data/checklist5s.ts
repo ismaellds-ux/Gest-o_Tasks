@@ -2,6 +2,14 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ChecklistArea, ChecklistExecucao, ChecklistItem, ChecklistResposta, Tarefa } from "@/lib/types";
 
+export const CHAVE_LINK_FORMULARIO = "checklist_forms_url";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getLinkFormulario(supabase: SupabaseClient<any>): Promise<string> {
+  const { data } = await supabase.from("configuracoes").select("valor").eq("chave", CHAVE_LINK_FORMULARIO).maybeSingle();
+  return (data?.valor as string | undefined) ?? "";
+}
+
 export type PendenciaChecklist = Pick<Tarefa, "id" | "o_que" | "descricao" | "quando" | "criado_por">;
 
 // Tarefas geradas automaticamente por item de checklist que ainda não foram

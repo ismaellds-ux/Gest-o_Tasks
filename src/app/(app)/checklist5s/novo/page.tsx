@@ -1,14 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
-import { listarAreasComItens, listarExecucoes, listarPendenciasChecklist } from "@/lib/data/checklist5s";
+import {
+  getLinkFormulario,
+  listarAreasComItens,
+  listarExecucoes,
+  listarPendenciasChecklist,
+} from "@/lib/data/checklist5s";
 import { agoraSaoPaulo, dataDoTurno, sugerirTurno } from "@/lib/domain/checklist5s";
 import { ChecklistForm } from "@/components/checklist5s/ChecklistForm";
 
 export default async function NovoChecklistPage() {
   const supabase = await createClient();
-  const [areas, execucoes, pendencias] = await Promise.all([
+  const [areas, execucoes, pendencias, linkFormulario] = await Promise.all([
     listarAreasComItens(supabase),
     listarExecucoes(supabase),
     listarPendenciasChecklist(supabase),
+    getLinkFormulario(supabase),
   ]);
 
   const agora = agoraSaoPaulo();
@@ -32,6 +38,7 @@ export default async function NovoChecklistPage() {
           turnoSugerido={turnoSugerido}
           momentoSugerido={jaRecebeu ? "entrega" : "recebimento"}
           pendencias={pendencias}
+          linkFormulario={linkFormulario}
         />
       )}
     </div>

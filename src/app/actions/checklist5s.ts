@@ -8,6 +8,7 @@ import { getUsuarioAtual } from "@/lib/data/tarefas";
 import { isAdminAtual } from "@/lib/data/admin";
 import { USUARIO_TODOS } from "@/lib/domain/permissoes";
 import { agoraSaoPaulo, dataDoTurno, labelTurno } from "@/lib/domain/checklist5s";
+import { CHAVE_LINK_FORMULARIO } from "@/lib/data/checklist5s";
 import type { ChecklistItem, Momento, RespostaChecklist, Turno } from "@/lib/types";
 
 const TURNOS_VALIDOS: Turno[] = ["turno1", "turno2", "turno3"];
@@ -206,6 +207,30 @@ export async function excluirExecucao(formData: FormData): Promise<ActionResult>
 
   revalidarChecklist();
   revalidatePath("/tasks1");
+  return {};
+}
+
+export async function salvarLinkFormulario(formData: FormData): Promise<ActionResult> {
+  const acesso = await exigirAdmin();
+  if (acesso.error) return { error: acesso.error };
+
+  const link = str(formData, "link");
+  const supabase = await createClient();
+
+  if (!link) {
+    const { error } = await supabase.from("configuracoes").delete().eq("chave", CHAVE_LINK_FORMULARIO);
+    if (error) return { error: "Não foi possível remover o link." };
+  } else {
+    if (!/^https:\/\/\S+$/i.test(link)) {
+      return { error: "Informe um link completo começando com https://" };
+    }
+    const { error } = await supabase
+      .from("configuracoes")
+      .upsert({ chave: CHAVE_LINK_FORMULARIO, valor: link }, { onConflict: "chave" });
+    if (error) return { error: "Não foi possível salvar o link." };
+  }
+
+  revalidarChecklist();
   return {};
 }
 

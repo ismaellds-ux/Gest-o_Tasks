@@ -125,6 +125,11 @@ export type ChecklistResposta = {
   observacao: string | null;
 };
 
+export type Configuracao = {
+  chave: string;
+  valor: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -216,6 +221,12 @@ export type Database = {
         Insert: Omit<Conclusao, "id" | "data_conclusao"> &
           Partial<Pick<Conclusao, "id" | "data_conclusao">>;
         Update: Partial<Conclusao>;
+        Relationships: [];
+      };
+      configuracoes: {
+        Row: Configuracao;
+        Insert: Configuracao;
+        Update: Partial<Configuracao>;
         Relationships: [];
       };
       alteracoes: {
